@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MansaRent · Aperçu mobile</title>
+<style>
+  :root { --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#94a3b8; --teal:#0f766e; --gold:#d97706; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { position:sticky; top:0; z-index:5; display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 14px; background:rgba(15,23,42,.92); backdrop-filter: blur(6px); border-bottom:1px solid #1f2937; }
+  header b { font-size:15px; margin-right:6px; } header b span { color:var(--gold); }
+  .btn { border:1px solid #334155; background:#1e293b; color:var(--text); padding:6px 11px; border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; }
+  .btn.on { background:var(--teal); border-color:var(--teal); }
+  .grow { flex:1; }
+  label.zoom { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+  main { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; gap:28px; padding:22px 12px 40px; }
+  .device { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .name { font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.04em; }
+  .frame-wrap { transform-origin: top center; }
+  .phone { position:relative; background:#000; box-shadow: 0 20px 50px rgba(0,0,0,.55), inset 0 0 0 2px #2b2b2b; }
+  .phone iframe { display:block; border:0; background:#fff; width:100%; height:100%; }
+  /* iPhone 15 : 393 × 852 */
+  .iphone { width:417px; height:876px; padding:12px; border-radius:58px; }
+  .iphone .screen { width:393px; height:852px; border-radius:46px; overflow:hidden; position:relative; }
+  .iphone .island { position:absolute; top:11px; left:50%; transform:translateX(-50%); width:122px; height:34px; background:#000; border-radius:20px; z-index:2; pointer-events:none; }
+  /* Android (Pixel 8) : 412 × 915 */
+  .android { width:432px; height:935px; padding:10px; border-radius:40px; }
+  .android .screen { width:412px; height:915px; border-radius:30px; overflow:hidden; position:relative; }
+  .android .punch { position:absolute; top:12px; left:50%; transform:translateX(-50%); width:14px; height:14px; background:#000; border-radius:50%; z-index:2; pointer-events:none; }
+  .landscape .iphone { width:876px; height:417px; } .landscape .iphone .screen { width:852px; height:393px; }
+  .landscape .android { width:935px; height:432px; } .landscape .android .screen { width:915px; height:412px; }
+  .landscape .island, .landscape .punch { display:none; }
+  .hidden { display:none !important; }
+  .hint { width:100%; text-align:center; font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <b>Mansa<span>Rent</span> · aperçu mobile</b>
+  <button class="btn on" data-show="both">Les deux</button>
+  <button class="btn" data-show="iphone">iPhone</button>
+  <button class="btn" data-show="android">Android</button>
+  <button class="btn" id="rotate">↻ Pivoter</button>
+  <button class="btn" id="reload">⟳ Recharger</button>
+  <button class="btn on" id="appmode" title="Affiche l'interface de l'application (sans pied de page, flèche retour…)">📱 Mode appli</button>
+  <span class="grow"></span>
+  <label class="zoom">Zoom <input id="zoom" type="range" min="40" max="100" value="70" /> <span id="zv">70%</span></label>
+</header>
+<main id="stage">
+  <div class="device" id="d-iphone">
+    <div class="name">iPhone 15 · 393 × 852</div>
+    <div class="frame-wrap"><div class="phone iphone"><div class="screen"><div class="island"></div><iframe title="iPhone" src="/?app=1"></iframe></div></div></div>
+  </div>
+  <div class="device" id="d-android">
+    <div class="name">Android · Pixel 8 · 412 × 915</div>
+    <div class="frame-wrap"><div class="phone android"><div class="screen"><div class="punch"></div><iframe title="Android" src="/?app=1"></iframe></div></div></div>
+  </div>
+  <p class="hint">Aperçu de l'écran et de l'interface de l'appli. Les vibrations, l'appareil photo et les notifications ne marchent que sur un vrai téléphone (ou l'émulateur Android Studio).</p>
+</main>
+<script>
+  const stage = document.getElementById("stage");
+  const wraps = [...document.querySelectorAll(".frame-wrap")];
+  const zoom = document.getElementById("zoom"), zv = document.getElementById("zv");
+  const save = (k, v) => { try { localStorage.setItem("mr_preview_" + k, v); } catch (e) {} };
+  const load = (k, d) => { try { return localStorage.getItem("mr_preview_" + k) ?? d; } catch (e) { return d; } };
+  function applyZoom() {
+    const z = zoom.value / 100; zv.textContent = zoom.value + "%";
+    wraps.forEach((w) => {
+      const phone = w.firstElementChild;
+      phone.style.transformOrigin = "top left";
+      phone.style.transform = `scale(${z})`;
+      w.style.width = phone.offsetWidth * z + "px";   // offsetWidth ignore la mise à l'échelle
+      w.style.height = phone.offsetHeight * z + "px";
+    });
+    save("zoom", zoom.value);
+  }
+  function show(which) {
+    document.querySelectorAll("[data-show]").forEach((b) => b.classList.toggle("on", b.dataset.show === which));
+    document.getElementById("d-iphone").classList.toggle("hidden", which === "android");
+    document.getElementById("d-android").classList.toggle("hidden", which === "iphone");
+    save("show", which);
+  }
+  document.querySelectorAll("[data-show]").forEach((b) => b.onclick = () => show(b.dataset.show));
+  document.getElementById("rotate").onclick = () => { stage.classList.toggle("landscape"); applyZoom(); save("land", stage.classList.contains("landscape") ? "1" : "0"); };
+  document.getElementById("reload").onclick = () => document.querySelectorAll("iframe").forEach((f) => f.contentWindow.location.reload());
+  const appBtn = document.getElementById("appmode");
+  function setApp(on) {
+    appBtn.classList.toggle("on", on);
+    document.querySelectorAll("iframe").forEach((f) => { f.src = on ? "/?app=1" : "/?app=0"; });
+    save("app", on ? "1" : "0");
+  }
+  appBtn.onclick = () => setApp(!appBtn.classList.contains("on"));
+  zoom.oninput = applyZoom;
+  zoom.value = load("zoom", "70");
+  if (load("land", "0") === "1") stage.classList.add("landscape");
+  show(load("show", "both"));
+  setApp(load("app", "1") === "1");
+  applyZoom();
+</script>
+</body>
+</html>

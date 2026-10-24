@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MansaRent — Design System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Bricolage Grotesque', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            teal: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            },
+            amber: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            },
+            gray: {
+              50: '#f9fafb',
+              100: '#f3f4f6',
+              200: '#e5e7eb',
+              300: '#d1d5db',
+              400: '#9ca3af',
+              500: '#6b7280',
+              600: '#4b5563',
+              700: '#374151',
+              800: '#1f2937',
+              900: '#111827',
+            },
+            rose: {
+              500: '#f43f5e',
+            },
+            green: {
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-display { font-family: 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; }
+    .color-swatch { width: 100%; height: 80px; border-radius: 12px; }
+    .color-swatch-small { width: 60px; height: 60px; border-radius: 12px; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-white shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="font-display text-xl font-extrabold">Mansa<span class="text-amber-500">Rent</span></span>
+        <span class="ml-4 text-sm text-gray-400 font-medium">Design System</span>
+      </div>
+      <span class="text-xs font-bold uppercase tracking-widest text-teal-700 bg-teal-50 px-3 py-1.5 rounded-full">v1.0</span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-5 py-12 space-y-16">
+
+    <!-- Hero -->
+    <section class="text-center space-y-4">
+      <h1 class="font-display text-4xl md:text-5xl font-extrabold text-gray-900">Design System</h1>
+      <p class="text-lg text-gray-500 max-w-2xl mx-auto">Colors, typography, components, and guidelines for the MansaRent platform.</p>
+    </section>
+
+    <!-- Colors -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Colors</h2>
+        <p class="text-sm text-gray-500">Primary brand palette and semantic colors</p>
+      </div>
+
+      <!-- Primary: Teal -->
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Primary — Teal</h3>
+        <div class="grid grid-cols-5 md:grid-cols-10 gap-3">
+          <div class="text-center"><div class="color-swatch-small bg-teal-50 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">50</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-100 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">100</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-200 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">200</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-300 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">300</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-400 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">400</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-500 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">500</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-600"></div><p class="text-xs text-gray-500 mt-1.5">600</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-700"></div><p class="text-xs text-gray-500 mt-1.5">700</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-800"></div><p class="text-xs text-gray-500 mt-1.5">800</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-teal-900"></div><p class="text-xs text-gray-500 mt-1.5">900</p></div>
+        </div>
+      </div>
+
+      <!-- Accent: Amber -->
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Accent — Amber</h3>
+        <div class="grid grid-cols-5 md:grid-cols-10 gap-3">
+          <div class="text-center"><div class="color-swatch-small bg-amber-50 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">50</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-100 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">100</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-200 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">200</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-300 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">300</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-400 ring-1 ring-gray-200"></div><p class="text-xs text-gray-500 mt-1.5">400</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-500"></div><p class="text-xs text-gray-500 mt-1.5">500</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-600"></div><p class="text-xs text-gray-500 mt-1.5">600</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-700"></div><p class="text-xs text-gray-500 mt-1.5">700</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-800"></div><p class="text-xs text-gray-500 mt-1.5">800</p></div>
+          <div class="text-center"><div class="color-swatch-small bg-amber-900"></div><p class="text-xs text-gray-500 mt-1.5">900</p></div>
+        </div>
+      </div>
+
+      <!-- Semantic -->
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Semantic</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-4 ring-1 ring-gray-200 space-y-3">
+            <div class="color-swatch-small bg-green-600"></div>
+            <div><p class="text-sm font-semibold">Success</p><p class="text-xs text-gray-400">green-600</p></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 ring-1 ring-gray-200 space-y-3">
+            <div class="color-swatch-small bg-rose-500"></div>
+            <div><p class="text-sm font-semibold">Error / Favorite</p><p class="text-xs text-gray-400">rose-500</p></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 ring-1 ring-gray-200 space-y-3">
+            <div class="color-swatch-small bg-amber-500"></div>
+            <div><p class="text-sm font-semibold">Warning / Accent</p><p class="text-xs text-gray-400">amber-500</p></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 ring-1 ring-gray-200 space-y-3">
+            <div class="color-swatch-small bg-gray-900"></div>
+            <div><p class="text-sm font-semibold">Dark / Text</p><p class="text-xs text-gray-400">gray-900</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Typography</h2>
+        <p class="text-sm text-gray-500">Font families and scale</p>
+      </div>
+
+      <!-- Font Families -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-teal-600">Display / Headings</p>
+          <p class="font-display text-4xl font-extrabold text-gray-900">Bricolage Grotesque</p>
+          <p class="text-sm text-gray-500">Used for headings, logos, and hero text. Weight range: 400–800.</p>
+          <div class="flex gap-2">
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">400</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">500</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">600</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">700</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">800</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-4">
+          <p class="text-xs font-bold uppercase tracking-widest text-teal-600">Body / UI</p>
+          <p class="text-4xl font-bold text-gray-900">Plus Jakarta Sans</p>
+          <p class="text-sm text-gray-500">Used for body text, buttons, labels, and UI elements. Weight range: 400–800.</p>
+          <div class="flex gap-2">
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">400</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">500</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">600</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">700</span>
+            <span class="text-xs bg-gray-100 px-2 py-1 rounded">800</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Type Scale -->
+      <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-6">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">Type Scale</h3>
+        <div class="space-y-5">
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-5xl</span>
+            <span class="font-display text-5xl font-extrabold text-gray-900">Trouvez. Louez.</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-4xl</span>
+            <span class="font-display text-4xl font-bold text-gray-900">Emménagez.</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-3xl</span>
+            <span class="font-display text-3xl font-bold text-gray-900">Find your home</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-2xl</span>
+            <span class="font-display text-2xl font-bold text-gray-900">Section heading</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-xl</span>
+            <span class="text-xl font-semibold text-gray-900">Card title</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-lg</span>
+            <span class="text-lg font-medium text-gray-700">Subtitle or description</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-base</span>
+            <span class="text-base text-gray-600">Body text for paragraphs and general content</span>
+          </div>
+          <div class="flex items-baseline gap-6 border-b border-gray-100 pb-4">
+            <span class="text-xs font-mono text-gray-400 w-16">text-sm</span>
+            <span class="text-sm text-gray-500">Secondary text, labels, and metadata</span>
+          </div>
+          <div class="flex items-baseline gap-6">
+            <span class="text-xs font-mono text-gray-400 w-16">text-xs</span>
+            <span class="text-xs text-gray-400">Captions, badges, and fine print</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Buttons</h2>
+        <p class="text-sm text-gray-500">All button variants and states</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-8">
+        <!-- Variants -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Variants</h3>
+          <div class="flex flex-wrap gap-4">
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] bg-teal-700 text-white hover:bg-teal-800 shadow-lg shadow-teal-700/20 px-6 py-3 text-sm">Solid</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] bg-amber-500 text-teal-900 hover:bg-amber-400 shadow-lg shadow-amber-600/25 px-6 py-3 text-sm">Amber</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] bg-white text-teal-800 ring-1 ring-teal-200 hover:ring-teal-400 hover:bg-teal-50 px-6 py-3 text-sm">Ghost</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] bg-transparent text-teal-800 ring-2 ring-teal-700 hover:bg-teal-700 hover:text-white px-6 py-3 text-sm">Outline</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-600/20 px-6 py-3 text-sm">Green</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 active:scale-[0.97] bg-gray-900 text-white hover:bg-gray-800 px-6 py-3 text-sm">Dark</button>
+          </div>
+        </div>
+
+        <!-- Sizes -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Sizes</h3>
+          <div class="flex flex-wrap items-center gap-4">
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-4 py-2 text-xs">Small</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-5 py-2.5 text-sm">Medium</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-6 py-3 text-base">Large</button>
+          </div>
+        </div>
+
+        <!-- States -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">States</h3>
+          <div class="flex flex-wrap gap-4">
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-6 py-3 text-sm">Normal</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-6 py-3 text-sm opacity-50 cursor-not-allowed" disabled>Disabled</button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-6 py-3 text-sm ring-4 ring-teal-200">Focused</button>
+          </div>
+        </div>
+
+        <!-- With Icons -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">With Icons</h3>
+          <div class="flex flex-wrap gap-4">
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-6 py-3 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              Get Started
+            </button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-amber-500 text-teal-900 hover:bg-amber-400 px-6 py-3 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Add New
+            </button>
+            <button class="inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-white text-teal-800 ring-1 ring-teal-200 hover:ring-teal-400 hover:bg-teal-50 px-6 py-3 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+              Verified
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Cards</h2>
+        <p class="text-sm text-gray-500">Property cards, agent cards, and content cards</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Property Card -->
+        <div class="bg-white rounded-2xl ring-1 ring-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+          <div class="h-48 bg-gradient-to-br from-teal-100 to-teal-200 relative">
+            <span class="absolute top-3 left-3 bg-amber-500 text-teal-900 text-xs font-bold px-3 py-1 rounded-full">Featured</span>
+            <button class="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-2 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-rose-500"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </button>
+          </div>
+          <div class="p-5 space-y-3">
+            <div class="flex items-start justify-between">
+              <h3 class="font-display text-lg font-bold text-gray-900">Modern 3-Bedroom House</h3>
+              <span class="text-teal-700 font-bold text-sm whitespace-nowrap">6.2M GNF</span>
+            </div>
+            <p class="text-sm text-gray-500 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              Kipé, Conakry
+            </p>
+            <div class="flex items-center gap-4 text-xs text-gray-400">
+              <span class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>
+                3 beds
+              </span>
+              <span class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6 6 3 3 6"/><path d="m3 6 3 3"/><path d="M15 18l3 3 3-3"/><path d="m18 18-3-3"/><path d="M12 3v18"/></svg>
+                2 baths
+              </span>
+              <span class="flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                180 m²
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent Card -->
+        <div class="bg-white rounded-2xl ring-1 ring-gray-200 p-6 space-y-4">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full bg-teal-700 text-white grid place-items-center font-bold text-lg">M</div>
+            <div>
+              <h3 class="font-display text-lg font-bold text-gray-900">Mamadou Baldé</h3>
+              <p class="text-sm text-gray-500">Landlord · Conakry</p>
+            </div>
+          </div>
+          <p class="text-sm text-gray-500">Owner of several properties in Conakry. Responsive and attentive for peaceful rentals.</p>
+          <div class="flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="text-sm text-gray-400 ml-1">5.0</span>
+          </div>
+          <button class="w-full inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-teal-700 text-white hover:bg-teal-800 px-5 py-2.5 text-sm">View Profile</button>
+        </div>
+
+        <!-- Pricing Card -->
+        <div class="bg-white rounded-2xl ring-1 ring-gray-200 p-6 space-y-4">
+          <div class="text-center space-y-1">
+            <p class="text-xs font-bold uppercase tracking-widest text-teal-600">Subscription</p>
+            <p class="font-display text-3xl font-extrabold text-gray-900">50,000 <span class="text-lg text-gray-400 font-normal">GNF/mo</span></p>
+          </div>
+          <ul class="space-y-3 text-sm text-gray-600">
+            <li class="flex items-center gap-2">
+              <span class="grid h-5 w-5 place-items-center rounded-full bg-teal-100 text-teal-700"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              Unlimited property listings
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="grid h-5 w-5 place-items-center rounded-full bg-teal-100 text-teal-700"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              Receive tenant messages
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="grid h-5 w-5 place-items-center rounded-full bg-teal-100 text-teal-700"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              Priority support
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="grid h-5 w-5 place-items-center rounded-full bg-teal-100 text-teal-700"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+              30-day free trial included
+            </li>
+          </ul>
+          <button class="w-full inline-flex items-center justify-center gap-2 rounded-full font-semibold bg-amber-500 text-teal-900 hover:bg-amber-400 px-5 py-3 text-sm">Subscribe Now</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badges & Tags -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Badges & Tags</h2>
+        <p class="text-sm text-gray-500">Status labels and category tags</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-6">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Status Badges</h3>
+          <div class="flex flex-wrap gap-3">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500 text-teal-900 px-4 py-1.5 text-xs font-bold">Featured</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-teal-100 text-teal-700 px-4 py-1.5 text-xs font-bold">New</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-purple-100 text-purple-700 px-4 py-1.5 text-xs font-bold">Premium</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 text-green-700 px-4 py-1.5 text-xs font-bold">Available</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-100 text-rose-700 px-4 py-1.5 text-xs font-bold">Rented</span>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Section Tags</h3>
+          <div class="flex flex-wrap gap-3">
+            <span class="inline-flex items-center gap-2.5 rounded-full bg-teal-50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-teal-700 ring-1 ring-teal-100">
+              <span class="h-2 w-2 rotate-45 rounded-[1px] bg-amber-500"></span>
+              Properties
+            </span>
+            <span class="inline-flex items-center gap-2.5 rounded-full bg-teal-50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-teal-700 ring-1 ring-teal-100">
+              <span class="h-2 w-2 rotate-45 rounded-[1px] bg-amber-500"></span>
+              Agents
+            </span>
+            <span class="inline-flex items-center gap-2.5 rounded-full bg-teal-50 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-teal-700 ring-1 ring-teal-100">
+              <span class="h-2 w-2 rotate-45 rounded-[1px] bg-amber-500"></span>
+              How It Works
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Forms -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Form Elements</h2>
+        <p class="text-sm text-gray-500">Inputs, selects, and form controls</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-6">
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Text Input</label>
+            <input type="text" placeholder="Enter your name" class="w-full rounded-2xl border-0 bg-gray-50 px-4 py-3.5 text-sm font-medium text-gray-800 ring-1 ring-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Select</label>
+            <select class="w-full appearance-none rounded-2xl border-0 bg-gray-50 px-4 py-3.5 pr-9 text-sm font-medium text-gray-800 ring-1 ring-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500" style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right .8rem center;">
+              <option>Conakry</option>
+              <option>Kankan</option>
+              <option>Kindia</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Email</label>
+            <input type="email" placeholder="you@example.com" class="w-full rounded-2xl border-0 bg-gray-50 px-4 py-3.5 text-sm font-medium text-gray-800 ring-1 ring-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-gray-700">Password</label>
+            <input type="password" placeholder="Enter password" class="w-full rounded-2xl border-0 bg-gray-50 px-4 py-3.5 text-sm font-medium text-gray-800 ring-1 ring-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm font-semibold text-gray-700">Textarea</label>
+          <textarea rows="3" placeholder="Write a message..." class="w-full rounded-2xl border-0 bg-gray-50 px-4 py-3.5 text-sm font-medium text-gray-800 ring-1 ring-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spacing & Layout -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Spacing & Layout</h2>
+        <p class="text-sm text-gray-500">Spacing scale and container widths</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200 space-y-8">
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Spacing Scale</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-12">space-1</span><div class="h-1 w-1 bg-teal-500 rounded"></div><span class="text-xs text-gray-400">4px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-12">space-2</span><div class="h-2 w-2 bg-teal-500 rounded"></div><span class="text-xs text-gray-400">8px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-12">space-3</span><div class="h-3 w-3 bg-teal-500 rounded"></div><span class="text-xs text-gray-400">12px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-12">space-4</span><div class="h-4 w-4 bg-teal-500 rounded"></div><span class="text-xs text-gray-400">16px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-12">space-6</span><div class="h-6 w-6 bg-teal-500 rounded"></div><span class="text-xs text-gray-400">24px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-12">space-8</span><div class="h-8 w-8 bg-teal-500 rounded"></div><span class="text-xs text-gray-400">32px</span></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Container Widths</h3>
+          <div class="space-y-3">
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-24">max-w-7xl</span><div class="h-4 bg-teal-200 rounded" style="width: 80%"></div><span class="text-xs text-gray-400">80rem / 1280px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-24">max-w-5xl</span><div class="h-4 bg-teal-300 rounded" style="width: 60%"></div><span class="text-xs text-gray-400">64rem / 1024px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-24">max-w-3xl</span><div class="h-4 bg-teal-400 rounded" style="width: 40%"></div><span class="text-xs text-gray-400">48rem / 768px</span></div>
+            <div class="flex items-center gap-4"><span class="text-xs font-mono text-gray-400 w-24">max-w-sm</span><div class="h-4 bg-teal-500 rounded" style="width: 20%"></div><span class="text-xs text-gray-400">24rem / 384px</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Icons -->
+    <section class="space-y-8">
+      <div>
+        <h2 class="font-display text-2xl font-bold text-gray-900 mb-1">Icons</h2>
+        <p class="text-sm text-gray-500">Icon library — Lucide React</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-8 ring-1 ring-gray-200">
+        <div class="grid grid-cols-6 md:grid-cols-12 gap-4">
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M2 6 6 3 3 6"/><path d="m3 6 3 3"/><path d="M15 18l3 3 3-3"/><path d="m18 18-3-3"/><path d="M12 3v18"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></div>
+          <div class="grid place-items-center p-3 rounded-xl bg-gray-50"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 pt-8 pb-12">
+      <div class="text-center space-y-2">
+        <p class="font-display text-lg font-bold text-gray-900">Mansa<span class="text-amber-500">Rent</span></p>
+        <p class="text-sm text-gray-400">Design System v1.0 — Guinea's Digital Property Rental Marketplace</p>
+      </div>
+    </footer>
+
+  </main>
+</body>
+</html>

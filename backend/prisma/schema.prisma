@@ -1,0 +1,244 @@
+// ============================================================
+// MansaRent — Schéma Prisma (PostgreSQL)
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Better Auth tables
+// ============================================================
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  username         String?   @unique // @pseudo public, modifiable par l'utilisateur
+  email            String    @unique
+  emailVerified    Boolean   @default(false)
+  image            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Champs personnalisés MansaRent
+  password         String?
+  avatar           String?
+  phone            String?
+  role             String    @default("tenant") // tenant | landlord | agent | admin
+  googleId         String?   @unique
+  // Parcours d'inscription : le rôle (acheteur/locataire, agent, vendeur/propriétaire)
+  // est choisi une fois après l'inscription. Agents et propriétaires passent
+  // ensuite par une vérification manuelle de l'admin avant de pouvoir publier.
+  roleChosen       Boolean   @default(false)
+  verification     String    @default("none") // none | pending | approved | rejected
+  proProfile       ProProfile?
+
+  // Relations MansaRent
+  properties       Property[]
+  favorites        Favorite[]
+  sentMessages     Message[]  @relation("MessageSender")
+  devices          DeviceToken[] // téléphones (notifications push)
+
+  // Relations Better Auth
+  accounts         Account[]
+  sessions         Session[]
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?   @db.Text
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+}
+
+// ============================================================
+// Modèles MansaRent
+// ============================================================
+
+model Property {
+  id           String   @id @default(cuid())
+  title        String
+  type         String   // Maison | Appartement | Chambre | Villa | Bureau | Boutique
+  rentalType   String   // "Location longue durée" | "Court séjour"
+  price        Int
+  city         String
+  neighborhood String?
+  beds         Int      @default(0)
+  baths        Int      @default(0)
+  area         Int      @default(0)
+  featured     Boolean  @default(false)
+  tag          String?
+  amenities    Json     @default("[]")
+  images       Json     @default("[]")
+  description  String   @db.Text
+  // Cycle de vie : disponible → loué / vendu (marqué par l'agent ou le propriétaire)
+  status       String   @default("available") // available | rented | sold
+  dealPrice    Int?     // montant final de la transaction (sinon le prix affiché)
+  closedAt     DateTime?
+  views        Int      @default(0)
+  landlordId   String
+  landlord     User     @relation(fields: [landlordId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  favorites    Favorite[]
+  conversations Conversation[]
+  reviews      Review[]
+
+  @@index([city])
+  @@index([type])
+  @@index([rentalType])
+  @@index([price])
+  @@index([featured])
+  @@index([landlordId])
+  @@index([status])
+}
+
+// Profil professionnel (agent ou vendeur/propriétaire) soumis à vérification.
+// Le numéro de pièce d'identité est chiffré (AES-256-GCM, lib/secrets.js) et
+// n'est jamais exposé publiquement — seul l'admin le voit pour vérifier.
+model ProProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind            String    // agent | landlord
+  fullName        String
+  phone           String
+  address         String
+  city            String
+  idType          String    // national_id | passport | driver_license | voter_card
+  idNumber        String    @db.Text // chiffré
+  yearsExperience Int       @default(0)
+  agencyName      String?
+  licenseNumber   String?
+  bio             String?   @db.Text
+  rejectionReason String?
+  submittedAt     DateTime  @default(now())
+  reviewedAt      DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+}
+
+model Conversation {
+  id         String   @id @default(cuid())
+  propertyId String
+  tenantId   String
+  landlordId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  messages   Message[]
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([landlordId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  text           String       @db.Text
+  read           Boolean      @default(false)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+model Review {
+  id         String    @id @default(cuid())
+  propertyId String?
+  agentId    String?
+  authorId   String?
+  author     String
+  rating     Int
+  text       String    @db.Text
+  createdAt  DateTime  @default(now())
+
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId])
+  @@index([agentId])
+  @@index([authorId])
+}
+
+// ---- Admin-managed integrations & site content --------------------
+// Les clés API saisies dans l'admin sont chiffrées (AES-256-GCM, voir
+// lib/secrets.js) et PRIORITAIRES sur les variables d'environnement.
+// Réglages du site (annonce, images, contact) consommés par le frontend.
+
+model Integration {
+  provider  String   @id // zeptomail | r2 | google | firebase | custom_*
+  enabled   Boolean  @default(false)
+  config    String   @db.Text // JSON chiffré { ENV_VAR: valeur }
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSetting {
+  key       String   @id // announcement | hero | categories | contact
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+// Téléphone enregistré pour les notifications push (appli Android / iPhone).
+model DeviceToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  platform  String   @default("android") // android | ios
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}

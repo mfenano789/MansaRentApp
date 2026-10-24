@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* ---- Partout sur mobile ------------------------------------------- */
+/* Pas de flash gris au toucher. */
+* { -webkit-tap-highlight-color: transparent; }
+/* iOS zoome quand un champ fait moins de 16 px : on l'évite. */
+@media (max-width: 1023px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* ---- Mode application (Capacitor, PWA installée, aperçu ?app=1) ------ */
+html.mr-app,
+html.mr-app body {
+  overscroll-behavior: none;           /* pas de « tirer pour actualiser » ni rebond */
+  -webkit-user-select: none;
+  user-select: none;                   /* pas de sélection de texte… */
+  -webkit-touch-callout: none;         /* …ni de menu d'appui long */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* …sauf dans les champs de saisie. */
+html.mr-app input,
+html.mr-app textarea,
+html.mr-app [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+html.mr-app img,
+html.mr-app a { -webkit-user-drag: none; }
+/* Pas de barres de défilement visibles. */
+html.mr-app, html.mr-app * { scrollbar-width: none; }
+html.mr-app::-webkit-scrollbar, html.mr-app *::-webkit-scrollbar { display: none; width: 0; height: 0; }
+/* Pas de curseur « main » ni de soulignement de lien. */
+html.mr-app a { text-decoration: none; }
+
+/* Effet d'appui : léger enfoncement (propriété scale = compatible avec les transform existants). */
+html.mr-app button,
+html.mr-app [role="button"],
+html.mr-app a {
+  transition: scale 0.12s ease, opacity 0.12s ease, background-color 0.2s, color 0.2s;
+}
+html.mr-app button:not(:disabled):active,
+html.mr-app [role="button"]:active,
+html.mr-app a:active {
+  scale: 0.96;
+  opacity: 0.85;
+}
+
+/* Clavier ouvert : la barre d'onglets se cache. */
+html.mr-kb-open .mr-bottomnav { display: none; }
+
+/* ---- Transitions entre les pages ---------------------------------- */
+@keyframes mrPageFwd { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes mrPageBack { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+@keyframes mrPageFade { from { opacity: 0; } to { opacity: 1; } }
+.mr-page-fwd { animation: mrPageFwd 0.26s cubic-bezier(.2, .8, .2, 1) both; }
+.mr-page-back { animation: mrPageBack 0.26s cubic-bezier(.2, .8, .2, 1) both; }
+.mr-page-tab { animation: mrPageFade 0.18s ease-out both; }
+@media (min-width: 1024px) {
+  .mr-page-fwd, .mr-page-back { animation-name: mrPageFade; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mr-page-fwd, .mr-page-back, .mr-page-tab { animation: none; }
+}
+
+/* ---- Squelettes de chargement ---------------------------------------- */
+@keyframes mrShimmer { from { background-position: -320px 0; } to { background-position: 320px 0; } }
+.mr-skel {
+  background-color: #eef1f0;
+  background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,.75) 50%, rgba(255,255,255,0) 100%);
+  background-size: 320px 100%;
+  background-repeat: no-repeat;
+  animation: mrShimmer 1.2s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+/* Dans l'appli, la flèche retour est dans la barre du haut : pas de doublon dans la page. */
+@media (max-width: 1023px) {
+  html.mr-app .mr-inback { display: none !important; }
+}

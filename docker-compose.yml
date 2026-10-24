@@ -1,0 +1,51 @@
+# MansaRent — full local stack: Postgres + backend API + frontend PWA.
+# Requires Docker Desktop (Windows: needs admin + WSL2, download from docker.com).
+#   docker compose up --build        # frontend → http://localhost:8080, API → http://localhost:4000/api
+#   docker compose run --rm backend npm run seed   # one-off: admin + demo listings
+name: mansarent
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mansa
+      POSTGRES_PASSWORD: mansa
+      POSTGRES_DB: mansarent
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mansa -d mansarent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgresql://mansa:mansa@db:5432/mansarent
+      PORT: 4000
+      APP_URL: http://localhost:8080
+      PUBLIC_URL: http://localhost:4000
+      # ⚠️ Override in production: JWT_SECRET + integration keys (see backend/.env.example).
+      JWT_SECRET: change-me-in-production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_URL: http://localhost:4000/api
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

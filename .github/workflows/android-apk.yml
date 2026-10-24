@@ -1,0 +1,65 @@
+# Construit l'APK Android de MansaRent à chaque push sur main,
+# puis le publie dans Releases → « apk-latest » (lien de téléchargement fixe).
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install
+        run: npm ci
+
+      - name: Build web app (mobile)
+        env:
+          # Adresse du backend vue par les téléphones : Settings → Secrets and variables → Actions → Variables
+          MOBILE_API_URL: ${{ vars.MOBILE_API_URL }}
+        run: |
+          if [ -z "$MOBILE_API_URL" ]; then echo "::warning::MOBILE_API_URL n'est pas défini : l'appli ne pourra pas joindre le backend."; fi
+          npm run build:mobile
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../MansaRent.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MansaRent-apk
+          path: MansaRent.apk
+
+      - name: Publish download link
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: MansaRent — APK Android (dernière version)
+          prerelease: true
+          make_latest: false
+          body: |
+            Dernière version de l'appli Android MansaRent (construite automatiquement).
+            Téléchargez **MansaRent.apk** sur un téléphone Android, puis autorisez « Installer des applis inconnues ».
+          files: MansaRent.apk
