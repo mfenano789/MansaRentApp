@@ -56,7 +56,7 @@ router.get("/users", async (req, res) => {
 
 router.put("/users/:id/role", async (req, res) => {
   const { role } = req.body || {};
-  if (!["tenant", "landlord", "agent", "admin"].includes(role)) {
+  if (!["tenant", "landlord", "agent", "hotel", "admin"].includes(role)) {
     return res.status(400).json({ error: "Rôle invalide" });
   }
   try {

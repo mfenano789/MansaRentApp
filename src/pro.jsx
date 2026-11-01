@@ -7,8 +7,10 @@ import { useTranslation } from "react-i18next";
 import {
   ArrowLeft, BadgeCheck, Briefcase, Building2, Check, CheckCircle2, Clock, Eye, Heart, Home, KeyRound,
   Lock, MessageSquare, Pencil, Plus, RotateCcw, Search, ShieldCheck, Star, Trash2, Trophy, Upload, X, XCircle,
+  Hotel, BedDouble, CalendarCheck, LogIn, LogOut, Percent, Wallet,
 } from "lucide-react";
 import { ProAPI, AgentAPI, AdminAPI, PropertyAPI, AuthAPI } from "./services/api.js";
+import { formatGNFFull } from "./MansaRent.jsx";
 // (AuthAPI : profil, photo et mot de passe)
 import {
   useApp, Btn, Avatar, Stars, PropertyCard, ReviewsBlock, formatGNF, VILLES_KEYS, coverOf, fromApi, fmtDate,
@@ -17,7 +19,7 @@ import {
 const inp = "w-full rounded-xl border-0 bg-gray-50 px-4 py-3 text-sm text-gray-800 ring-1 ring-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500";
 const sel = `mr-sel ${inp} appearance-none pr-9`;
 const lab = "mb-1.5 block text-sm font-semibold text-gray-700";
-const PRO_ROLES = ["agent", "landlord"];
+const PRO_ROLES = ["agent", "landlord", "hotel"];
 const ID_TYPES = ["national_id", "passport", "driver_license", "voter_card"];
 
 const Page = ({ children, max = "max-w-5xl" }) => (
@@ -147,6 +149,7 @@ export function RolePickerModal() {
     ["tenant", <Search key="i" size={24} />, "from-teal-600 to-teal-800"],
     ["agent", <Briefcase key="i" size={24} />, "from-amber-500 to-amber-700"],
     ["landlord", <KeyRound key="i" size={24} />, "from-gray-700 to-gray-900"],
+    ["hotel", <Hotel key="i" size={24} />, "from-sky-600 to-indigo-800"],
   ];
   const confirm = async () => {
     if (!pick) return;
@@ -196,6 +199,7 @@ export function ProOnboardingPage() {
   const [busy, setBusy] = useState(false);
   const [serverErr, setServerErr] = useState("");
   const isAgent = user?.role === "agent";
+  const isHotel = user?.role === "hotel";
 
   useEffect(() => {
     if (!user || !hasApi) return;
@@ -203,7 +207,7 @@ export function ProOnboardingPage() {
       .then((r) => {
         setExisting(r.profile);
         const p = r.profile;
-        setF(p ? { ...EMPTY_PRO, ...p, idNumber: "", yearsExperience: String(p.yearsExperience ?? ""), agencyName: p.agencyName || "", licenseNumber: p.licenseNumber || "", bio: p.bio || "" }
+        setF(p ? { ...EMPTY_PRO, ...p, idNumber: "", yearsExperience: String(p.yearsExperience ?? ""), agencyName: p.agencyName || "", licenseNumber: p.licenseNumber || "", bio: p.bio || "", stars: p.stars ? String(p.stars) : "" }
           : { ...EMPTY_PRO, fullName: user.name || "", phone: user.phone || "" });
       })
       .catch(() => setF({ ...EMPTY_PRO, fullName: user.name || "" }));
@@ -223,6 +227,7 @@ export function ProOnboardingPage() {
     if (!existing && f.idNumber.trim().length < 4) e.idNumber = t("pro.onboarding.errors.idNumber");
     if (f.idNumber && f.idNumber.trim().length > 0 && f.idNumber.trim().length < 4) e.idNumber = t("pro.onboarding.errors.idNumber");
     if (isAgent && (f.yearsExperience === "" || Number(f.yearsExperience) < 0)) e.yearsExperience = t("pro.onboarding.errors.experience");
+    if (isHotel && (f.agencyName || "").trim().length < 2) e.agencyName = t("pro.hotel.errName");
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -236,6 +241,7 @@ export function ProOnboardingPage() {
         idType: f.idType, ...(f.idNumber.trim() ? { idNumber: f.idNumber.trim() } : {}),
         yearsExperience: isAgent ? Number(f.yearsExperience) || 0 : 0,
         agencyName: f.agencyName.trim() || null, licenseNumber: f.licenseNumber.trim() || null, bio: f.bio.trim() || null,
+        ...(isHotel ? { stars: Number(f.stars) || null } : {}),
       });
       refreshUser({ verification: r.verification, phone: f.phone.trim() });
       showToast(t("pro.onboarding.submitted"));
@@ -250,7 +256,7 @@ export function ProOnboardingPage() {
       <BackBtn onClick={() => navigate("dashboard")} />
       <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 sm:p-8">
         <div className="flex flex-wrap items-center gap-2"><VerifBadge state={user.verification} /><span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold text-gray-600">{t(`pro.roles.${user.role}`)}</span></div>
-        <h1 className="mr-display mt-4 text-2xl font-extrabold text-gray-900 sm:text-3xl">{t(isAgent ? "pro.onboarding.titleAgent" : "pro.onboarding.titleLandlord")}</h1>
+        <h1 className="mr-display mt-4 text-2xl font-extrabold text-gray-900 sm:text-3xl">{t(isAgent ? "pro.onboarding.titleAgent" : isHotel ? "pro.hotel.title" : "pro.onboarding.titleLandlord")}</h1>
         <p className="mt-2 text-sm text-gray-600">{t("pro.onboarding.subtitle")}</p>
         {user.verification === "rejected" && existing?.rejectionReason && (
           <div className="mt-5 rounded-2xl bg-rose-50 p-4 text-sm text-rose-700 ring-1 ring-rose-100"><b>{t("pro.onboarding.rejectedBecause")}</b> {existing.rejectionReason}</div>
@@ -277,8 +283,9 @@ export function ProOnboardingPage() {
             <h2 className="mr-display text-sm font-extrabold uppercase tracking-wide text-teal-700">{t("pro.onboarding.sectionPro")}</h2>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               {isAgent && <div><label className={lab}>{t("pro.onboarding.experience")} *</label><input type="number" min="0" className={inp} value={f.yearsExperience} onChange={(e) => set("yearsExperience", e.target.value)} placeholder="3" /><Err k="yearsExperience" /></div>}
-              <div><label className={lab}>{t(isAgent ? "pro.onboarding.agency" : "pro.onboarding.company")}</label><input className={inp} value={f.agencyName} onChange={(e) => set("agencyName", e.target.value)} /></div>
-              {isAgent && <div><label className={lab}>{t("pro.onboarding.license")}</label><input className={inp} value={f.licenseNumber} onChange={(e) => set("licenseNumber", e.target.value)} /></div>}
+              <div><label className={lab}>{t(isAgent ? "pro.onboarding.agency" : isHotel ? "pro.hotel.name" : "pro.onboarding.company")}{isHotel ? " *" : ""}</label><input className={inp} value={f.agencyName} onChange={(e) => set("agencyName", e.target.value)} placeholder={isHotel ? t("pro.hotel.namePh") : ""} />{errors.agencyName && <p className="mt-1 text-xs text-rose-500">{errors.agencyName}</p>}</div>
+              {isHotel && <div><label className={lab}>{t("pro.hotel.stars")}</label><select className={sel} value={f.stars || ""} onChange={(e) => set("stars", e.target.value)}><option value="">{t("pro.hotel.noStars")}</option>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{"★".repeat(n)}</option>)}</select></div>}
+              {(isAgent || isHotel) && <div><label className={lab}>{t(isHotel ? "pro.hotel.license" : "pro.onboarding.license")}</label><input className={inp} value={f.licenseNumber} onChange={(e) => set("licenseNumber", e.target.value)} /></div>}
               <div className="sm:col-span-2"><label className={lab}>{t("pro.onboarding.bio")}</label><textarea rows={3} className={inp} value={f.bio} onChange={(e) => set("bio", e.target.value)} placeholder={t("pro.onboarding.bioPh")} /></div>
             </div>
           </section>
@@ -401,6 +408,64 @@ function DashListing({ p, onChanged, onDeleted }) {
   );
 }
 
+// ---- Hôtel : arrivées du jour, occupation, revenus, commission ------------------------
+function HotelPanel({ canPublish }) {
+  const { navigate } = useApp();
+  const { t, i18n } = useTranslation();
+  const [d, setD] = useState(null);
+  useEffect(() => { ProAPI.hotel().then(setD).catch(() => setD({ error: true })); }, []);
+  if (!d) return <div className="mt-6 mr-skel h-40 rounded-3xl" />;
+  if (d.error) return null;
+  const k = d.totals;
+  const day = (iso) => new Date(iso).toLocaleDateString(i18n.language === "en" ? "en-GB" : "fr-FR", { day: "numeric", month: "short", timeZone: "UTC" });
+  const Row = ({ b }) => (
+    <div className="flex items-center gap-3 border-b border-gray-50 px-4 py-3 last:border-0">
+      <Avatar name={b.guest?.name} src={b.guest?.avatar} size={34} />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-bold text-gray-900">{b.guest?.name} · <span className="font-semibold text-gray-500">{b.title}</span></div>
+        <div className="text-xs text-gray-500">{day(b.checkIn)} → {day(b.checkOut)} · {t("pro.hotel.rooms", { count: b.units || 1 })} · {t("pro.hotel.guests", { count: b.guests })}</div>
+      </div>
+      <div className="text-right"><div className="text-sm font-extrabold text-teal-700">{formatGNFFull(b.hostAmount)}</div><div className="text-[10px] font-semibold text-gray-400">{t(b.paymentStatus === "paid" ? "pro.hotel.paidApp" : "pro.hotel.payOnArrival")}</div></div>
+    </div>
+  );
+  return (
+    <div className="mt-6 space-y-4">
+      <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-sky-700 via-indigo-800 to-indigo-950 p-5 text-white shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/15"><Hotel size={22} /></span><div><div className="mr-display text-lg font-extrabold">{t("pro.hotel.panel")}</div><div className="text-xs text-white/70">{t("pro.hotel.inventory", { types: k.roomTypes, rooms: k.rooms })}</div></div></div>
+          <Btn variant="amber" className="px-4 py-2.5 text-sm" onClick={() => navigate("bookings", { tab: "hosting" })}><CalendarCheck size={15} /> {t("pro.hotel.allBookings")}{k.pending ? ` (${k.pending})` : ""}</Btn>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[[LogIn, t("pro.hotel.arrivals"), k.arrivalsToday], [LogOut, t("pro.hotel.departures"), k.departuresToday], [BedDouble, t("pro.hotel.occupied"), `${k.occupiedTonight} / ${k.rooms}`], [Percent, t("pro.hotel.occupancy"), `${k.occupancy30} %`]].map(([Ic, label, v]) => (
+            <div key={label} className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10"><Ic size={16} className="text-amber-300" /><div className="mr-display mt-1.5 text-xl font-extrabold">{v}</div><div className="text-[11px] text-white/70">{label}</div></div>
+          ))}
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10"><div className="flex items-center gap-1.5 text-[11px] text-white/70"><Wallet size={13} /> {t("pro.hotel.revenueMonth")}</div><div className="mr-display mt-1 text-lg font-extrabold">{formatGNFFull(k.revenueMonth)}</div></div>
+          <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10"><div className="flex items-center gap-1.5 text-[11px] text-white/70"><Percent size={13} /> {t("pro.hotel.commissionDue")}</div><div className="mr-display mt-1 text-lg font-extrabold">{formatGNFFull(k.commissionDue)}</div><div className="text-[10px] text-white/60">{t("pro.hotel.commissionHint")}</div></div>
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-gray-100">
+          <div className="border-b border-gray-50 px-4 py-3 text-sm font-extrabold text-gray-900">{t("pro.hotel.todayArrivals")}</div>
+          {d.arrivals.length ? d.arrivals.map((b) => <Row key={b.id} b={b} />) : <p className="px-4 py-6 text-center text-xs text-gray-400">{t("pro.hotel.noArrivals")}</p>}
+        </div>
+        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-gray-100">
+          <div className="border-b border-gray-50 px-4 py-3 text-sm font-extrabold text-gray-900">{t("pro.hotel.upcoming")}</div>
+          {d.upcoming.length ? d.upcoming.map((b) => <Row key={b.id} b={b} />) : <p className="px-4 py-6 text-center text-xs text-gray-400">{t("pro.hotel.noUpcoming")}</p>}
+        </div>
+      </div>
+      {d.rooms.length === 0 && canPublish && (
+        <div className="rounded-3xl bg-sky-50 p-5 text-center ring-1 ring-sky-100">
+          <BedDouble size={26} className="mx-auto text-sky-700" />
+          <p className="mt-2 text-sm text-sky-900">{t("pro.hotel.firstRoom")}</p>
+          <Btn variant="solid" className="mt-3 px-5 py-2.5 text-sm" onClick={() => navigate("post")}><Plus size={15} /> {t("pro.hotel.addRoom")}</Btn>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DashboardPage() {
   const { user, navigate, hasApi, openAuth, refreshUser, reloadProperties } = useApp();
   const { t } = useTranslation();
@@ -435,10 +500,11 @@ export function DashboardPage() {
         </div>
         <div className="flex gap-2">
           <Btn variant="ghost" className="px-4 py-2.5 text-sm" onClick={() => navigate("agent", { id: user.id })}><Eye size={15} /> {t("pro.dash.publicProfile")}</Btn>
-          <Btn variant="solid" className="px-4 py-2.5 text-sm" disabled={!canPublish} onClick={() => navigate("post")}><Plus size={15} /> {t("nav.postListing")}</Btn>
+          <Btn variant="solid" className="px-4 py-2.5 text-sm" disabled={!canPublish} onClick={() => navigate("post")}><Plus size={15} /> {t(user.role === "hotel" ? "pro.hotel.addRoom" : "nav.postListing")}</Btn>
         </div>
       </div>
       {user.role !== "admin" && <VerificationBanner state={state} onAction={() => navigate("onboarding")} />}
+      {user.role === "hotel" && <HotelPanel canPublish={canPublish} />}
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi icon={<Home size={19} />} label={t("pro.dash.kpi.active")} value={`${s.active} / ${s.listings}`} />
         <Kpi icon={<Eye size={19} />} label={t("pro.dash.kpi.views")} value={s.views.toLocaleString("fr-FR")} tone="gray" />
@@ -450,7 +516,7 @@ export function DashboardPage() {
         <Kpi icon={<Star size={19} />} label={t("pro.dash.kpi.rating", { count: s.reviewCount })} value={s.reviewCount ? s.rating.toFixed(1) : "—"} tone="amber" />
       </div>
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="mr-display text-xl font-extrabold text-gray-900">{t("pro.dash.myListings")}</h2>
+        <h2 className="mr-display text-xl font-extrabold text-gray-900">{t(user.role === "hotel" ? "pro.hotel.myRooms" : "pro.dash.myListings")}</h2>
         <div className="flex gap-1 rounded-xl bg-white p-1 ring-1 ring-gray-200">
           {["all", "active", "closed"].map((k) => (
             <button key={k} onClick={() => setFilter(k)} className={`rounded-lg px-3 py-1.5 text-xs font-bold ${filter === k ? "bg-teal-700 text-white" : "text-gray-500"}`}>{t(`pro.dash.filter.${k}`)}</button>
@@ -476,7 +542,7 @@ export function DashboardPage() {
 export function RankingPage() {
   const { navigate, hasApi, route } = useApp();
   const { t } = useTranslation();
-  const [kind, setKind] = useState(route.kind === "landlord" ? "landlord" : "agent");
+  const [kind, setKind] = useState(["landlord", "hotel"].includes(route.kind) ? route.kind : "agent");
   const [rows, setRows] = useState(null);
   useEffect(() => {
     if (!hasApi) return;
@@ -493,7 +559,7 @@ export function RankingPage() {
         <div><h1 className="mr-display text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("pro.rank.title")}</h1><p className="text-sm text-gray-500">{t("pro.rank.subtitle")}</p></div>
       </div>
       <div className="mt-5 inline-flex gap-1 rounded-xl bg-white p-1 ring-1 ring-gray-200">
-        {["agent", "landlord"].map((k) => (
+        {["agent", "landlord", "hotel"].map((k) => (
           <button key={k} onClick={() => setKind(k)} className={`rounded-lg px-4 py-2 text-sm font-bold ${kind === k ? "bg-teal-700 text-white" : "text-gray-500"}`}>{t(`pro.rank.tab.${k}`)}</button>
         ))}
       </div>
@@ -912,7 +978,7 @@ export function EditProfilePage() {
           <div><label className={lab}>{t("auth.email")}</label><input className={`${inp} text-gray-500`} value={user.email || ""} disabled /></div>
           <div>
             <label className={lab}>{t("pro.profileEdit.accountType")}</label>
-            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-gray-200"><span className="text-sm font-bold text-gray-800">{t(`pro.roles.${user.role || "tenant"}`)}</span>{["agent", "landlord"].includes(user.role) && <VerifBadge state={user.verification} />}</div>
+            <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 ring-1 ring-gray-200"><span className="text-sm font-bold text-gray-800">{t(`pro.roles.${user.role || "tenant"}`)}</span>{PRO_ROLES.includes(user.role) && <VerifBadge state={user.verification} />}</div>
             <p className="mt-1 text-xs text-gray-400">{t("pro.profileEdit.roleNote")}</p>
           </div>
           {err && <p className="text-sm font-semibold text-rose-600">{err}</p>}

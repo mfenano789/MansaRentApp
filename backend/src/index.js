@@ -17,6 +17,10 @@ import adminRoutes from "./routes/admin.js";
 import settingsRoutes from "./routes/settings.js";
 import proRoutes from "./routes/pro.js";
 import deviceRoutes from "./routes/devices.js";
+import leadRoutes from "./routes/leads.js";
+import bookingRoutes from "./routes/bookings.js";
+import paymentRoutes from "./routes/payments.js";
+import { startPaymentJobs } from "./lib/payments.js";
 import { syncIntegrationsToEnv } from "./lib/integrations.js";
 import { UPLOADS_DIR } from "./lib/storage.js";
 
@@ -26,7 +30,7 @@ const app = express();
 const APP_ORIGINS = ["https://localhost", "http://localhost", "capacitor://localhost", "ionic://localhost"];
 const webOrigins = (process.env.APP_URL || "").split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean);
 app.use(cors({ origin: webOrigins.length ? [...webOrigins, ...APP_ORIGINS] : true }));
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "2mb", verify: (req, _res, buf) => { if (req.originalUrl.startsWith("/api/payments/callback")) req.rawBody = buf.toString("utf8"); } }));
 app.use(express.urlencoded({ extended: true }));
 
 // ---- Santé -------------------------------------------------
@@ -42,6 +46,9 @@ app.use("/api/favorites", favoriteRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/agents", agentRoutes);
+app.use("/api/leads", leadRoutes);       // ventes : demandes d'achat gérées par l'admin
+app.use("/api/bookings", bookingRoutes); // courts séjours : réservations type Airbnb
+app.use("/api/payments", paymentRoutes); // paiements MansaSend + versements aux hôtes
 app.use("/api/devices", deviceRoutes); // jetons push de l'appli mobile
 app.use("/api/pro", proRoutes); // espace agent / vendeur-propriétaire
 app.use("/api/admin", adminRoutes);
@@ -66,4 +73,5 @@ app.listen(PORT, () => {
   console.log(`MansaRent backend → http://localhost:${PORT}`);
   // Les clés saisies dans l'admin (chiffrées en base) prennent le pas sur le .env.
   syncIntegrationsToEnv().catch((e) => console.warn("[integrations] sync au démarrage :", e.message));
+  startPaymentJobs(); // versements automatiques aux hôtes + réservations non payées expirées
 });

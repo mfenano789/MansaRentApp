@@ -122,4 +122,24 @@ export const Mailer = {
       text: `${senderName} vous a écrit au sujet de « ${propertyTitle} ».`,
     });
   },
+  // Alerte équipe MansaRent (nouvelle demande d'achat…)
+  adminAlert(to, title, body) {
+    const appUrl = (process.env.APP_URL || "").split(",")[0];
+    return send({
+      to,
+      subject: `MansaRent · ${title}`,
+      html: layout({ title, body: `<p>${esc(body)}</p>`, cta: appUrl ? "Ouvrir l'admin" : "", link: appUrl }),
+      text: `${title} — ${body}`,
+    });
+  },
+  // Réservation court séjour : demande, acceptation, refus, annulation
+  bookingUpdate(to, name, title, body) {
+    const appUrl = (process.env.APP_URL || "").split(",")[0];
+    return send({
+      to,
+      subject: `MansaRent · ${title}`,
+      html: layout({ title, body: `<p>Bonjour ${esc(name || "")},</p><p>${esc(body)}</p>`, cta: appUrl ? "Voir mes réservations" : "", link: appUrl }),
+      text: `Bonjour ${name || ""}, ${body}`,
+    });
+  },
 };

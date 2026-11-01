@@ -14,7 +14,8 @@
     "post": "Publier",
     "postListing": "Publier une annonce",
     "menu": "Menu",
-    "close": "Fermer"
+    "close": "Fermer",
+    "hotels": "Hôtels"
   },
   "hero": {
     "badge": "La marketplace de location N°1 en Guinée",
@@ -48,7 +49,8 @@
     "tag": "Catégories",
     "title": "Que recherchez-vous ?",
     "subtitle": "Maisons, appartements, chambres, villas, bureaux ou boutiques : trouvez le bien qu'il vous faut.",
-    "listings": "annonces"
+    "listings": "annonces",
+    "Hotels": "Hôtels"
   },
   "cities": {
     "Conakry": "Conakry",
@@ -369,7 +371,8 @@
   "rentalTypes": {
     "longStay": "Location longue durée",
     "shortStay": "Court séjour",
-    "sale": "Vente"
+    "sale": "Vente",
+    "hotel": "Hôtel"
   },
   "amenities": {
     "Climatisation": "Climatisation",
@@ -387,7 +390,8 @@
   },
   "landlordRoles": {
     "Propriétaire": "Propriétaire",
-    "Agente immobilière": "Agente immobilière"
+    "Agente immobilière": "Agente immobilière",
+    "Hôtel": "Hôtel"
   },
   "tags": {
     "featured": "En vedette",
@@ -558,7 +562,9 @@
         "content": "Contenus",
         "users": "Utilisateurs",
         "verifications": "Vérifications",
-        "listings": "Annonces"
+        "listings": "Annonces",
+        "leads": "Demandes",
+        "payments": "Paiements"
       },
       "enabled": "Activé",
       "save": "Enregistrer",
@@ -585,7 +591,8 @@
         "tenant": "Locataire",
         "landlord": "Propriétaire",
         "agent": "Agent",
-        "admin": "Admin"
+        "admin": "Admin",
+        "hotel": "Hôtel"
       }
     }
   },
@@ -595,7 +602,8 @@
       "tenant": "Acheteur / Locataire",
       "agent": "Agent immobilier",
       "landlord": "Vendeur / Propriétaire",
-      "admin": "Admin"
+      "admin": "Admin",
+      "hotel": "Hôtel"
     },
     "status": {
       "available": "Disponible",
@@ -634,7 +642,12 @@
       },
       "needsVerif": "Vérification par l'admin",
       "continue": "Continuer",
-      "final": "Ce choix est définitif (l'admin peut le modifier)"
+      "final": "Ce choix est définitif (l'admin peut le modifier)",
+      "hotel": {
+        "title": "Hôtel",
+        "desc": "Je gère un hôtel ou une résidence : je publie mes chambres et reçois des réservations.",
+        "toast": "Bienvenue ! Complétez le dossier de votre hôtel pour être vérifié."
+      }
     },
     "onboarding": {
       "menu": "Mon profil professionnel",
@@ -741,7 +754,8 @@
       "subtitle": "Classement selon les biens loués ou vendus et les avis des clients",
       "tab": {
         "agent": "Agents",
-        "landlord": "Vendeurs / Propriétaires"
+        "landlord": "Vendeurs / Propriétaires",
+        "hotel": "Hôtels"
       },
       "empty": "Aucun profil vérifié pour le moment.",
       "deals": "conclus",
@@ -826,6 +840,38 @@
       "save": "Enregistrer",
       "saved": "Profil mis à jour.",
       "nameShort": "Le nom doit contenir au moins 2 caractères."
+    },
+    "hotel": {
+      "title": "Dossier de votre hôtel",
+      "name": "Nom de l'hôtel",
+      "namePh": "Ex. Hôtel Kaloum Palace",
+      "errName": "Indiquez le nom de l'hôtel",
+      "stars": "Classement",
+      "noStars": "Non classé",
+      "license": "N° d'autorisation d'exploitation",
+      "addRoom": "Ajouter un type de chambre",
+      "myRooms": "Mes chambres",
+      "panel": "Votre hôtel aujourd'hui",
+      "inventory": "{{types}} type(s) de chambre · {{rooms}} chambre(s)",
+      "allBookings": "Réservations",
+      "arrivals": "Arrivées aujourd'hui",
+      "departures": "Départs aujourd'hui",
+      "occupied": "Chambres occupées ce soir",
+      "occupancy": "Occupation (30 jours)",
+      "revenueMonth": "Revenus du mois (votre part)",
+      "commissionDue": "Commission MansaRent à reverser",
+      "commissionHint": "10 % des séjours payés à l'arrivée",
+      "todayArrivals": "Arrivées du jour",
+      "upcoming": "Prochaines arrivées",
+      "noArrivals": "Aucune arrivée aujourd'hui.",
+      "noUpcoming": "Aucune réservation à venir.",
+      "rooms_one": "{{count}} chambre",
+      "rooms_other": "{{count}} chambres",
+      "guests_one": "{{count}} voyageur",
+      "guests_other": "{{count}} voyageurs",
+      "paidApp": "payé dans l'appli",
+      "payOnArrival": "à l'arrivée",
+      "firstRoom": "Ajoutez vos types de chambre (Standard, Double, Suite…) avec leur prix et le nombre de chambres : les voyageurs pourront réserver immédiatement."
     }
   },
   "app": {
@@ -835,7 +881,273 @@
       "agent": "Profil",
       "onboarding": "Vérification",
       "reset": "Mot de passe",
-      "editProfile": "Modifier le profil"
+      "editProfile": "Modifier le profil",
+      "bookings": "Réservations",
+      "payment": "Paiement"
+    }
+  },
+  "deals": {
+    "perNight": "/nuit",
+    "cancel": "Annuler",
+    "sale": {
+      "handled": "Ce bien est vendu par l'intermédiaire de MansaRent. Un conseiller vous répond, organise la visite et vérifie le dossier du vendeur.",
+      "step1": "Vous échangez uniquement avec l'équipe MansaRent",
+      "step2": "Visite organisée et accompagnée",
+      "step3": "Vendeur vérifié par MansaRent (identité et titre)",
+      "contact": "Contacter MansaRent",
+      "visit": "Demander une visite",
+      "visitWhen": "Date et heure souhaitées",
+      "visitNote": "Un message pour l'équipe (facultatif)",
+      "visitSend": "Envoyer",
+      "visitDefault": "Bonjour, je souhaite visiter ce bien.",
+      "safe": "Ne versez jamais d'argent avant la visite et la vérification du titre.",
+      "own": "Votre bien est présenté par MansaRent : les acheteurs écrivent à notre équipe, qui vous contacte pour organiser la vente."
+    },
+    "book": {
+      "checkIn": "Arrivée",
+      "checkOut": "Départ",
+      "guests": "Voyageurs",
+      "guestsCount_one": "{{count}} voyageur",
+      "guestsCount_other": "{{count}} voyageurs",
+      "nights_one": "{{count}} nuit",
+      "nights_other": "{{count}} nuits",
+      "limits": "Minimum {{min}} nuit(s) · jusqu'à {{max}} voyageur(s)",
+      "booked": "Déjà réservé",
+      "messagePh": "Présentez-vous à l'hôte (motif du séjour, heure d'arrivée…)",
+      "fees": "Frais de service",
+      "free": "Gratuit",
+      "total": "Total",
+      "request": "Demander à réserver",
+      "howItWorks": "Aucun paiement maintenant. L'hôte accepte ou refuse votre demande sous 24 h ; vous payez à l'arrivée.",
+      "sent": "Demande envoyée à l'hôte ✅",
+      "errOrder": "Le départ doit être après l'arrivée",
+      "errMin": "Minimum {{count}} nuit(s) pour ce logement",
+      "errTaken": "Une partie de ces dates est déjà réservée",
+      "errDates": "Choisissez vos dates d'arrivée et de départ",
+      "errGeneric": "Réservation impossible, réessayez",
+      "own": "C'est votre logement. Les demandes de réservation arrivent dans « Réservations → Reçues ».",
+      "manage": "Gérer les réservations",
+      "feesIncluded": "Frais de service MansaRent inclus",
+      "howItWorksPay": "Envoyez votre demande : l'hôte répond sous 24 h. Une fois acceptée, payez dans l'appli pour confirmer vos dates.",
+      "rooms": "Chambres",
+      "roomsCount_one": "{{count}} chambre",
+      "roomsCount_other": "{{count}} chambres",
+      "hotelLimits": "Minimum {{min}} nuit(s) · {{per}} voyageur(s) par chambre",
+      "bookNow": "Réserver",
+      "hotelBooked": "Réservation confirmée ✅",
+      "hotelHowPay": "Confirmation immédiate. Payez ensuite dans l'appli sous 24 h.",
+      "hotelHowArrival": "Confirmation immédiate. Vous payez à l'hôtel à votre arrivée.",
+      "howItWorksArrival": "Envoyez votre demande : l'hôte répond sous 24 h. Une fois acceptée, vous payez à l'arrivée."
+    },
+    "info": {
+      "title": "Infos du séjour",
+      "guests_one": "Jusqu'à {{count}} voyageur",
+      "guests_other": "Jusqu'à {{count}} voyageurs",
+      "minNights_one": "Minimum {{count}} nuit",
+      "minNights_other": "Minimum {{count}} nuits",
+      "checkIn": "Arrivée à partir de {{time}}",
+      "checkOut": "Départ avant {{time}}",
+      "rules": "Règlement intérieur",
+      "rooms_one": "{{count}} chambre de ce type",
+      "rooms_other": "{{count}} chambres de ce type",
+      "perRoom_one": "{{count}} voyageur par chambre",
+      "perRoom_other": "{{count}} voyageurs par chambre"
+    },
+    "post": {
+      "title": "Court séjour : réglages de réservation",
+      "hint": "Le prix indiqué plus haut est le prix par nuit.",
+      "maxGuests": "Voyageurs maximum",
+      "minNights": "Nuits minimum",
+      "checkIn": "Heure d'arrivée",
+      "checkOut": "Heure de départ",
+      "rules": "Règlement intérieur",
+      "rulesPh": "Ex. pas de fête, non-fumeur, animaux acceptés…",
+      "price": "Prix par nuit (GNF)",
+      "youReceive": "Vous recevez",
+      "guestPays": "Le voyageur paie (+10 %)",
+      "split": "Le voyageur paie dans l'appli avec MansaSend. MansaRent garde 10 % et vous verse automatiquement votre part 24 h après son arrivée (frais de paiement déduits).",
+      "hotelTitle": "Chambre d'hôtel : réglages",
+      "units": "Nombre de chambres de ce type",
+      "unitsHint": "Ex. 12 chambres « Double » identiques",
+      "perRoom": "Voyageurs par chambre",
+      "roomPrice": "Prix par nuit et par chambre (GNF)"
+    },
+    "status": {
+      "pending": "En attente",
+      "accepted": "Confirmée",
+      "completed": "Terminée",
+      "declined": "Refusée",
+      "cancelled": "Annulée",
+      "awaiting_payment": "À payer",
+      "confirmed": "Confirmée",
+      "expired": "Expirée"
+    },
+    "trips": {
+      "title": "Réservations",
+      "subtitle": "Vos séjours et les demandes reçues pour vos logements.",
+      "tab": {
+        "trips": "Mes séjours",
+        "hosting": "Reçues (hôte)"
+      },
+      "upcoming": "À venir",
+      "past": "Historique",
+      "empty": "Aucun séjour pour l'instant. Trouvez un logement en « Court séjour ».",
+      "emptyHost": "Aucune demande reçue pour vos logements en court séjour.",
+      "guest": "Voyageur",
+      "host": "Hôte",
+      "accept": "Accepter",
+      "decline": "Refuser",
+      "cancel": "Annuler la réservation",
+      "message": "Message",
+      "confirmCancel": "Annuler cette réservation ?",
+      "login": "Connectez-vous pour voir vos réservations.",
+      "done": {
+        "accept": "Réservation acceptée ✅",
+        "decline": "Demande refusée",
+        "cancel": "Réservation annulée"
+      },
+      "confirmCancelNoRefund": "Moins de 48 h avant l'arrivée : l'annulation ne sera pas remboursée. Annuler quand même ?"
+    },
+    "lead": {
+      "intro": "Demandes d'achat : les acheteurs écrivent à MansaRent, jamais directement à l'agent. Vous voyez ici le dossier complet de l'agent pour le contacter.",
+      "all": "Toutes",
+      "empty": "Aucune demande d'achat pour l'instant.",
+      "buyer": "Acheteur",
+      "agent": "Agent",
+      "agentFile": "Dossier de l'agent / vendeur",
+      "unread_one": "{{count}} non lu",
+      "unread_other": "{{count}} non lus",
+      "listings_one": "{{count}} annonce",
+      "listings_other": "{{count}} annonces",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "whatsapp": "Écrire sur WhatsApp",
+      "address": "Adresse",
+      "agency": "Agence",
+      "license": "Licence n°",
+      "id": "Pièce d'identité",
+      "experience": "Expérience",
+      "years_one": "{{count}} an",
+      "years_other": "{{count}} ans",
+      "chatBuyer": "Discuter avec l'acheteur",
+      "chatAgent": "Contacter l'agent",
+      "chatAgentOpen": "Ouvrir la discussion avec l'agent",
+      "notes": "Notes internes (visibles par l'équipe uniquement)",
+      "notesPh": "Budget de l'acheteur, disponibilités, retour de l'agent…",
+      "visit": "Visite prévue",
+      "save": "Enregistrer",
+      "viewListing": "Voir l'annonce",
+      "dealPrice": "Prix de vente final (GNF, facultatif)",
+      "confirmSold": "Confirmer la vente",
+      "soldToast": "Vente enregistrée 🎉",
+      "status": {
+        "new": "Nouvelle",
+        "contacted": "Contactée",
+        "visit": "Visite prévue",
+        "offer": "Offre",
+        "sold": "Vendue",
+        "lost": "Perdue"
+      }
+    },
+    "chat": {
+      "advisor": "Conseiller MansaRent",
+      "team": "Équipe MansaRent",
+      "buyerLead": "Acheteur · {{status}}",
+      "agentLead": "Agent (vente)"
+    },
+    "menu": "Réservations",
+    "pay": {
+      "card": "Carte Visa / Mastercard",
+      "method": {
+        "om": "Orange Money",
+        "momo": "MTN MoMo",
+        "card": "carte"
+      },
+      "acceptedTitle": "L'hôte a accepté 🎉",
+      "payBefore": "Payez avant le {{date}} pour confirmer, sinon les dates seront libérées.",
+      "payNow": "Payer {{amount}}",
+      "offline": "Le paiement en ligne sera bientôt disponible : MansaRent vous contactera.",
+      "paidVia": "Payé par {{method}} via MansaRent",
+      "refund_pending": "Remboursement en cours : {{amount}}",
+      "refunded": "Remboursé : {{amount}}",
+      "refundUntil": "Annulation gratuite (remboursement intégral) jusqu'au {{date}}.",
+      "noRefund": "Annulation possible mais sans remboursement (moins de 48 h avant l'arrivée).",
+      "guestPaid": "Payé par le voyageur",
+      "mansarentShare": "Commission MansaRent",
+      "fees": "Frais de paiement (MansaSend)",
+      "youReceive": "Vous recevez",
+      "yourShare": "votre part",
+      "youReceiveNight": "Vous recevez {{amount}} par nuit (moins les frais de paiement).",
+      "waitingGuest": "En attente du paiement du voyageur dans l'appli",
+      "payoutOn": "Versement automatique le {{date}} (24 h après l'arrivée)",
+      "payoutDone": "Versé le {{date}} via MansaRent",
+      "payoutProcessing": "Versement en cours par MansaRent",
+      "payoutFailed": "Versement en attente : vérifiez votre numéro ci-dessus",
+      "payoutCancelled": "Annulé — le voyageur a été remboursé",
+      "successTitle": "Paiement réussi",
+      "successText": "Votre séjour est confirmé. L'hôte a été prévenu.",
+      "failTitle": "Paiement non abouti",
+      "failText": "Aucun montant n'a été débité. Vous pouvez réessayer depuis vos réservations.",
+      "waitTitle": "Confirmation du paiement…",
+      "waitText": "Ne fermez pas cette page, cela prend quelques secondes.",
+      "slowTitle": "Paiement en cours de vérification",
+      "toTrips": "Voir mes réservations",
+      "onArrivalChip": "Paiement à l'arrivée (espèces, Orange Money…)",
+      "payOnArrival": "À payer à l'arrivée : {{amount}}",
+      "collectOnArrival": "À encaisser à l'arrivée : {{amount}}",
+      "guestPaysOnSite": "Le voyageur vous paie sur place",
+      "commissionToSend": "Commission MansaRent (10 %)",
+      "youKeep": "Vous gardez",
+      "commissionLater": "MansaRent vous contactera pour la commission après le séjour.",
+      "commissionSettled": "Commission réglée ✅"
+    },
+    "payout": {
+      "title": "Où recevoir vos paiements",
+      "hint": "Vos gains de courts séjours sont versés automatiquement sur ce numéro, 24 h après l'arrivée du voyageur.",
+      "change": "Modifier",
+      "saved": "Numéro de versement enregistré ✅"
+    },
+    "adminPay": {
+      "collected": "Encaissé",
+      "commission": "Commission MansaRent",
+      "scheduled": "Versements prévus",
+      "refunds": "Remboursements",
+      "bookings_one": "{{count}} réservation",
+      "bookings_other": "{{count}} réservations",
+      "offline": "Paiement en ligne désactivé : ajoutez l'URL, le Merchant ID et la clé API dans Admin → APIs → MansaSend.",
+      "manualMode": "Les versements automatiques MansaSend sont désactivés : les versements aux hôtes arrivent ci-dessous, envoyez-les par Orange Money / MTN puis cliquez « Marquer comme envoyé ».",
+      "queue": "À envoyer",
+      "queueEmpty": "Rien à envoyer pour l'instant.",
+      "recent": "Paiements récents",
+      "none": "Aucun paiement pour l'instant.",
+      "kind": {
+        "host": "Versement hôte",
+        "refund": "Remboursement"
+      },
+      "retry": "Réessayer",
+      "markSent": "Marquer comme envoyé",
+      "refPrompt": "Référence de la transaction (facultatif)",
+      "pay": {
+        "unpaid": "Non payé",
+        "pending": "En cours",
+        "paid": "Payé",
+        "refund_pending": "À rembourser",
+        "refunded": "Remboursé"
+      },
+      "out": {
+        "none": "—",
+        "scheduled": "Versement prévu",
+        "processing": "En cours",
+        "manual": "À envoyer",
+        "paid": "Versé",
+        "failed": "Échec",
+        "cancelled": "Annulé"
+      },
+      "commissionsTitle": "Commissions à encaisser",
+      "commissionsHint": "Séjours et hôtels payés à l'arrivée : chaque hôte doit 10 % à MansaRent une fois le séjour terminé.",
+      "commissionsEmpty": "Aucune commission à encaisser.",
+      "markCollected": "Marquer encaissée",
+      "confirmCollect": "Confirmer que cet hôte a payé toutes ses commissions ?"
     }
   }
 }

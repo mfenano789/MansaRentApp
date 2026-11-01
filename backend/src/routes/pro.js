@@ -27,6 +27,7 @@ const profileSchema = z.object({
   agencyName: z.string().trim().max(120).optional().nullable(),
   licenseNumber: z.string().trim().max(60).optional().nullable(),
   bio: z.string().trim().max(1500).optional().nullable(),
+  stars: z.number().int().min(1).max(5).optional().nullable(), // hôtel
 });
 
 const mask = (v) => {
@@ -56,6 +57,7 @@ function view(user, profile) {
           agencyName: profile.agencyName,
           licenseNumber: profile.licenseNumber,
           bio: profile.bio,
+          stars: profile.stars ?? null,
           rejectionReason: user.verification === "rejected" ? profile.rejectionReason : null,
           submittedAt: profile.submittedAt,
           reviewedAt: profile.reviewedAt,
@@ -99,6 +101,7 @@ router.put("/me", async (req, res) => {
       agencyName: d.agencyName || null,
       licenseNumber: d.licenseNumber || null,
       bio: d.bio || null,
+      stars: req.user.role === "hotel" ? d.stars ?? null : null,
       rejectionReason: null,
       reviewedAt: null,
       submittedAt: new Date(),
@@ -116,6 +119,110 @@ router.put("/me", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Enregistrement impossible" });
+  }
+});
+
+// ---- Où recevoir l'argent des courts séjours (sans repasser par la vérification) ----
+const payoutSchema = z.object({
+  operator: z.enum(["om", "momo"]),
+  phone: z.string().trim().regex(/^\+?[\d\s.-]{8,20}$/, "Numéro invalide"),
+});
+
+router.get("/payout", async (req, res) => {
+  const pp = await prisma.proProfile.findUnique({ where: { userId: req.user.id }, select: { payoutOperator: true, payoutPhone: true, phone: true } }).catch(() => null);
+  res.json({ operator: pp?.payoutOperator || null, phone: pp?.payoutPhone || null, profilePhone: pp?.phone || null });
+});
+
+router.put("/payout", async (req, res) => {
+  if (!isPro(req.user) && req.user.role !== "admin") return res.status(403).json({ error: "Réservé aux hôtes" });
+  const parsed = payoutSchema.safeParse(req.body || {});
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message || "Données invalides" });
+  try {
+    const exists = await prisma.proProfile.findUnique({ where: { userId: req.user.id }, select: { id: true } });
+    if (!exists) return res.status(400).json({ error: "Complétez d'abord votre profil professionnel", code: "PROFILE_REQUIRED" });
+    const pp = await prisma.proProfile.update({
+      where: { userId: req.user.id },
+      data: { payoutOperator: parsed.data.operator, payoutPhone: parsed.data.phone },
+      select: { payoutOperator: true, payoutPhone: true },
+    });
+    // Versements bloqués faute de numéro : on les relance.
+    const stuck = await prisma.booking.findMany({ where: { hostId: req.user.id, payoutStatus: "manual", paymentStatus: "paid" }, select: { id: true } });
+    if (stuck.length) {
+      const ids = stuck.map((b) => b.id);
+      // L'ancienne ligne « à envoyer » est close, un nouvel envoi automatique part au prochain passage.
+      await prisma.payout.updateMany({ where: { bookingId: { in: ids }, kind: "host", status: "manual" }, data: { status: "failed", error: "Remplacé : numéro de versement ajouté" } });
+      await prisma.booking.updateMany({ where: { id: { in: ids } }, data: { payoutStatus: "scheduled" } });
+    }
+    res.json({ operator: pp.payoutOperator, phone: pp.payoutPhone });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Enregistrement impossible" });
+  }
+});
+
+// ---- Tableau de bord hôtel : arrivées, occupation, revenus ----------------------
+router.get("/hotel", async (req, res) => {
+  if (req.user.role !== "hotel" && req.user.role !== "admin") return res.status(403).json({ error: "Réservé aux hôtels" });
+  try {
+    const DAY = 86400000;
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const tomorrow = new Date(today.getTime() + DAY);
+    const in30 = new Date(today.getTime() + 30 * DAY);
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const rooms = await prisma.property.findMany({
+      where: { landlordId: req.user.id, rentalType: "Hôtel" },
+      select: { id: true, title: true, price: true, units: true, status: true, images: true, maxGuests: true },
+      orderBy: { createdAt: "asc" },
+    });
+    const ids = rooms.map((r) => r.id);
+    const live = { propertyId: { in: ids }, status: "accepted" };
+    const [arrivals, departures, inHouse, pending, upcoming, monthRows, next30] = await Promise.all([
+      prisma.booking.findMany({ where: { ...live, checkIn: today }, include: { property: { select: { title: true } } } }),
+      prisma.booking.count({ where: { ...live, checkOut: today } }),
+      prisma.booking.findMany({ where: { ...live, checkIn: { lte: today }, checkOut: { gt: today } }, select: { units: true } }),
+      prisma.booking.count({ where: { propertyId: { in: ids }, status: "pending" } }),
+      prisma.booking.findMany({
+        where: { ...live, checkIn: { gte: tomorrow } },
+        include: { property: { select: { title: true } } },
+        orderBy: { checkIn: "asc" },
+        take: 8,
+      }),
+      prisma.booking.findMany({ where: { ...live, checkIn: { gte: monthStart } }, select: { hostAmount: true, commission: true, commissionStatus: true } }),
+      prisma.booking.findMany({ where: { ...live, checkIn: { lt: in30 }, checkOut: { gt: today } }, select: { checkIn: true, checkOut: true, units: true } }),
+    ]);
+    const guestIds = [...new Set([...arrivals, ...upcoming].map((b) => b.guestId))];
+    const guests = await prisma.user.findMany({ where: { id: { in: guestIds } }, select: { id: true, name: true, avatar: true } });
+    const gBy = Object.fromEntries(guests.map((g) => [g.id, g]));
+    const totalRooms = rooms.filter((r) => r.status === "available").reduce((s, r) => s + (r.units || 1), 0);
+    // Occupation des 30 prochains jours : chambres-nuits vendues / disponibles
+    let sold = 0;
+    for (const b of next30) {
+      const from = Math.max(b.checkIn.getTime(), today.getTime());
+      const to = Math.min(b.checkOut.getTime(), in30.getTime());
+      sold += Math.max(0, Math.round((to - from) / DAY)) * (b.units || 1);
+    }
+    const capacity = totalRooms * 30;
+    const card = (b) => ({ id: b.id, title: b.property.title, guest: gBy[b.guestId] || null, checkIn: b.checkIn, checkOut: b.checkOut, nights: b.nights, units: b.units, guests: b.guests, hostAmount: b.hostAmount, paymentStatus: b.paymentStatus });
+    res.json({
+      rooms,
+      totals: {
+        roomTypes: rooms.length,
+        rooms: totalRooms,
+        arrivalsToday: arrivals.length,
+        departuresToday: departures,
+        occupiedTonight: inHouse.reduce((s, b) => s + (b.units || 1), 0),
+        pending,
+        revenueMonth: monthRows.reduce((s, b) => s + b.hostAmount, 0),
+        commissionDue: monthRows.filter((b) => b.commissionStatus === "due").reduce((s, b) => s + b.commission, 0),
+        occupancy30: capacity ? Math.round((sold / capacity) * 100) : 0,
+      },
+      arrivals: arrivals.map(card),
+      upcoming: upcoming.map(card),
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Tableau de bord indisponible" });
   }
 });
 

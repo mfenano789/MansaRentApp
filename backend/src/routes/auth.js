@@ -22,7 +22,7 @@ const registerSchema = z.object({
   name: z.string().min(2).max(80),
   email: z.string().email().max(160),
   password: z.string().min(6).max(128),
-  role: z.enum(["tenant", "landlord", "agent"]).optional().default("tenant"),
+  role: z.enum(["tenant", "landlord", "agent", "hotel"]).optional().default("tenant"),
 });
 
 // « email » accepte aussi le nom d'utilisateur (avec ou sans @).
@@ -173,7 +173,7 @@ router.delete("/me/avatar", requireAuth, async (req, res) => {
 // Choisi une seule fois ; ensuite seul l'admin peut changer le rôle.
 router.post("/role", requireAuth, async (req, res) => {
   const role = req.body?.role;
-  if (!["tenant", "agent", "landlord"].includes(role)) {
+  if (!["tenant", "agent", "landlord", "hotel"].includes(role)) {
     return res.status(400).json({ error: "Rôle invalide" });
   }
   if (req.user.role === "admin") return res.status(400).json({ error: "Le rôle admin ne change pas ici" });

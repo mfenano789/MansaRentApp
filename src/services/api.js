@@ -130,8 +130,9 @@ export const ConversationAPI = {
   list() {
     return http(`/conversations`);
   },
-  start(propertyId) {
-    return http(`/conversations`, { method: "POST", body: JSON.stringify({ propertyId }) });
+  // Bien à vendre : la demande part chez MansaRent (extra = { message, visitAt }).
+  start(propertyId, extra = {}) {
+    return http(`/conversations`, { method: "POST", body: JSON.stringify({ propertyId, ...extra }) });
   },
   messages(id) {
     return http(`/conversations/${id}/messages`);
@@ -144,10 +145,45 @@ export const ConversationAPI = {
   },
 };
 
+// ---- Réservations court séjour (type Airbnb) ---------------------
+export const BookingAPI = {
+  availability(propertyId) { return http(`/bookings/availability/${propertyId}`); },
+  create(data) { return http(`/bookings`, { method: "POST", body: JSON.stringify(data) }); },
+  mine() { return http(`/bookings/mine`); },
+  host() { return http(`/bookings/host`); },
+  act(id, action) { return http(`/bookings/${id}`, { method: "PUT", body: JSON.stringify({ action }) }); },
+};
+
+// ---- Paiements MansaSend (Orange Money, MTN, carte) ---------------
+export const PaymentAPI = {
+  config() { return http(`/payments/config`); },
+  pay(bookingId) { return http(`/payments/booking/${bookingId}`, { method: "POST" }); },
+  status(bookingId) { return http(`/payments/booking/${bookingId}`); },
+  adminOverview() { return http(`/payments/admin/overview`); },
+  adminCommissions() { return http(`/payments/admin/commissions`); },
+  collectCommission(hostId, action = "collected") { return http(`/payments/admin/commissions/${hostId}`, { method: "PUT", body: JSON.stringify({ action }) }); },
+  adminPayout(id, action, providerRef) { return http(`/payments/admin/payouts/${id}`, { method: "PUT", body: JSON.stringify({ action, providerRef }) }); },
+};
+export const PayoutAPI = {
+  get() { return http(`/pro/payout`); },
+  save(operator, phone) { return http(`/pro/payout`, { method: "PUT", body: JSON.stringify({ operator, phone }) }); },
+};
+
+// ---- Demandes d'achat (admin) ------------------------------------
+export const LeadAPI = {
+  list(status) { return http(`/leads${status ? `?status=${encodeURIComponent(status)}` : ""}`); },
+  get(id) { return http(`/leads/${id}`); },
+  update(id, data) { return http(`/leads/${id}`, { method: "PUT", body: JSON.stringify(data) }); },
+  agentChat(id) { return http(`/leads/${id}/agent-chat`, { method: "POST" }); },
+};
+
 // ---- Espace pro (agent / vendeur-propriétaire) ---------------------
 export const ProAPI = {
   me() {
     return http(`/pro/me`);
+  },
+  hotel() {
+    return http(`/pro/hotel`);
   },
   save(profile) {
     return http(`/pro/me`, { method: "PUT", body: JSON.stringify(profile) });

@@ -6,17 +6,18 @@ import {
   Star, Facebook, Instagram, ArrowRight, ArrowLeft, Sparkles, Check,
   TrendingUp, Eye, Heart, Phone, ChevronRight, ChevronDown, SlidersHorizontal,
   ImagePlus, Maximize2, User, LogOut, Plus, Mail, Lock, Square,
-  MessageSquare, Send, CreditCard, Smartphone, Clock, Crown, BadgeCheck,
+  MessageSquare, Send, CreditCard, Smartphone, Clock, Crown, BadgeCheck, CalendarCheck,
   Bell, Compass, CircleUserRound, Download, History, Settings, LifeBuoy, Activity,
   Trophy, LayoutDashboard, Pencil
 } from "lucide-react";
 import { SettingsAPI, AdminAPI, AuthAPI, PropertyAPI, FavoriteAPI, ReviewAPI, ConversationAPI, DeviceAPI, Session } from "./services/api.js";
+import { SaleContactCard, BookingWidget, ShortStayInfo, ShortStayFields, BookingsPage, AdminLeads, PriceSuffix, PaymentReturnPage, AdminPayments } from "./deals.jsx";
 import { APP_MODE, PUSH_READY, setBackHandler, setPushHandlers, registerPush, success as hapticSuccess } from "./native.js";
 import { RolePickerModal, ProOnboardingPage, DashboardPage, RankingPage, ProPublicProfile, AdminVerifications, AdminListings, StatusBadge, PhotoPicker, ResetPasswordPage, PeopleList, EditProfilePage } from "./pro.jsx";
 
 const VILLES_KEYS = ["Conakry", "Kankan", "Kindia", "Nzérékoré", "Labé", "Mamou", "Boké"];
 const TYPES_KEYS = ["Maison", "Appartement", "Chambre", "Villa", "Bureau", "Boutique"];
-const LOCATIONS_KEYS = ["longStay", "shortStay", "sale"];
+const LOCATIONS_KEYS = ["longStay", "shortStay", "sale", "hotel"];
 const HAS_API = !!import.meta.env.VITE_API_URL;
 
 const POOL = {
@@ -62,6 +63,11 @@ const SEED_REVIEWS = [
 ];
 
 const formatGNF = (n) => {
+  // Milliards (ventes) : « 2,5 Md GNF »
+  if (n >= 1_000_000_000) {
+    const s = (Math.round((n / 1_000_000_000) * 100) / 100).toString().replace(".", ",");
+    return `${s} Md GNF`;
+  }
   if (n >= 1_000_000) {
     const s = (Math.round((n / 1_000_000) * 10) / 10).toString().replace(".", ",");
     return `${s}M GNF`;
@@ -69,6 +75,8 @@ const formatGNF = (n) => {
   if (n >= 1000) return `${Math.round(n / 1000)}k GNF`;
   return `${n} GNF`;
 };
+// Montant exact (totaux de réservation, prix final) : « 1 350 000 GNF »
+const formatGNFFull = (n) => `${new Intl.NumberFormat("fr-FR").format(Math.round(n || 0)).replace(/\u202f|\u00a0/g, " ")} GNF`;
 const landlordOf = (p) => p.landlordInfo || LANDLORDS[p.landlord ?? 0] || LANDLORDS[0];
 // Seed agents use i18n keys (roleKey/cityKey/bioKey); registered agents use plain strings.
 const dispRole = (a, t) => (a.roleKey ? t(a.roleKey) : a.role || "");
@@ -81,13 +89,16 @@ const DAY = 86400000;
 const fmtDate = (ts) => new Date(ts).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 const agentOf = (p) => (p.ownerId != null ? p.ownerId : typeof p.landlord === "number" ? p.landlord : null);
 const isSaleP = (p) => p.rentalTypeKey === "rentalTypes.sale";
+const isHotelP = (p) => p.rentalTypeKey === "rentalTypes.hotel";
+// Réservable à la nuit avec dates : court séjour ou chambre d'hôtel.
+const isShortP = (p) => p.rentalTypeKey === "rentalTypes.shortStay" || isHotelP(p);
 const cityOf = (p) => (p.cityKey || "").replace(/^cities\./, "");
 const rentalOf = (p) => (p.rentalTypeKey || "").replace(/^rentalTypes\./, "");
 const toMs = (v) => (v == null ? null : typeof v === "number" ? v : Date.parse(v) || null);
 
 // ---- Annonce API → forme utilisée par l'interface (mêmes champs que les annonces de démo)
-const RENTAL_FROM_API = { "Location longue durée": "longStay", "Court séjour": "shortStay", Vente: "sale" };
-const RENTAL_TO_API = { longStay: "Location longue durée", shortStay: "Court séjour", sale: "Vente" };
+const RENTAL_FROM_API = { "Location longue durée": "longStay", "Court séjour": "shortStay", Vente: "sale", "Hôtel": "hotel" };
+const RENTAL_TO_API = { longStay: "Location longue durée", shortStay: "Court séjour", sale: "Vente", hotel: "Hôtel" };
 const TAG_FROM_API = { "En vedette": "tags.featured", Nouveau: "tags.new", Premium: "tags.premium", "Court séjour": "tags.shortStay", Commercial: "tags.commercial", "Meublé": "tags.furnished", "Économique": "tags.economical" };
 const fromApi = (p) => {
   const owner = p.landlord && typeof p.landlord === "object" ? p.landlord : null;
@@ -101,14 +112,18 @@ const fromApi = (p) => {
     tagKey: TAG_FROM_API[p.tag] || null,
     amenities: (Array.isArray(p.amenities) ? p.amenities : []).map((a) => AMEN_KEYS.indexOf(a)).filter((i) => i >= 0),
     images: Array.isArray(p.images) ? p.images : [],
+    // Court séjour : le voyageur voit le prix hôte + commission MansaRent ; hostPrice = prix saisi par l'hôte.
+    price: p.guestPrice ?? p.price,
+    hostPrice: p.price,
     status: p.status || "available",
     ownerId: owner?.id || p.landlordId || null,
     ownerVerified: !!owner?.verified,
+    ownerStars: owner?.stars || null,
     landlord: undefined,
     landlordInfo: {
       name: owner?.name || p.landlordInfo?.name || "MansaRent",
       avatar: owner?.avatar,
-      roleKey: ownerRole === "agent" ? "landlordRoles.Agente immobilière" : "landlordRoles.Propriétaire",
+      roleKey: ownerRole === "agent" ? "landlordRoles.Agente immobilière" : ownerRole === "hotel" ? "landlordRoles.Hôtel" : "landlordRoles.Propriétaire",
     },
     createdTs: toMs(p.createdAt),
   };
@@ -239,6 +254,7 @@ const NAV_GROUPS = [
       ["nav.properties", () => ({ name: "listings", reset: true })],
       ["nav.shortStay", () => ({ name: "listings", preset: { ...EMPTY_FILTERS, rental: "shortStay" } })],
       ["nav.longStay", () => ({ name: "listings", preset: { ...EMPTY_FILTERS, rental: "longStay" } })],
+      ["nav.hotels", () => ({ name: "listings", preset: { ...EMPTY_FILTERS, rental: "hotel" } })],
     ],
   },
   { key: "nav.agents", action: () => ({ name: "home", anchor: "agents" }) },
@@ -402,7 +418,7 @@ function Navbar() {
               {user.role === "admin" && (
                 <button onClick={() => navigate("admin")} className="rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white hover:bg-teal-800">ADMIN</button>
               )}
-              {HAS_API && ["agent", "landlord"].includes(user.role) && (
+              {HAS_API && ["agent", "landlord", "hotel"].includes(user.role) && (
                 <button onClick={() => navigate("dashboard")} className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3 py-2 text-xs font-extrabold text-teal-900 hover:bg-amber-400"><LayoutDashboard size={14} /> {t("pro.dash.short")}</button>
               )}
               <button onClick={() => navigate("profile")} className="grid h-9 w-9 place-items-center rounded-full" aria-label={t("shell.tabs.profile")}><Avatar name={user.name} src={user.avatar} size={36} /></button>
@@ -538,13 +554,14 @@ const CATEGORIES = [
   { nameKey: "categories.Villas", type: "Villa", icon: Hotel, count: "640+", img: url("photo-1613490493576-7fde63acd811", 600) },
   { nameKey: "categories.Bureaux", type: "Bureau", icon: Briefcase, count: "520+", img: url("photo-1497366754035-f200968a6e72", 600) },
   { nameKey: "categories.Boutiques", type: "Boutique", icon: Store, count: "380+", img: url("photo-1604719312566-8912e9227c6a", 600) },
+  { nameKey: "categories.Hotels", rental: "hotel", icon: Hotel, count: "120+", img: url("photo-1566073771259-6a8506099945", 600) },
 ];
 
 function Categories() {
   const { setFilters, navigate, siteSettings, properties } = useApp();
   const { t } = useTranslation();
-  const go = (type) => { setFilters({ ...EMPTY_FILTERS, type }); navigate("listings"); };
-  const imgOf = (c) => (siteSettings?.categories?.[c.type]) || c.img;
+  const go = (c) => { setFilters(c.rental ? { ...EMPTY_FILTERS, rental: c.rental } : { ...EMPTY_FILTERS, type: c.type }); navigate("listings"); };
+  const imgOf = (c) => (siteSettings?.categories?.[c.type || c.rental]) || c.img;
   return (
     <section id="proprietes" className="mx-auto max-w-7xl px-5 py-16 lg:px-8 lg:py-24">
       <Reveal className="mb-10 text-center">
@@ -552,15 +569,15 @@ function Categories() {
         <h2 className="mr-display mt-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">{t("categories.title")}</h2>
         <p className="mx-auto mt-3 max-w-lg text-gray-600">{t("categories.subtitle")}</p>
       </Reveal>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
         {CATEGORIES.map((c, i) => (
           <Reveal key={c.nameKey} delay={i * 70}>
-            <button onClick={() => go(c.type)} className="group block w-full overflow-hidden rounded-3xl bg-white text-left shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:ring-teal-200">
+            <button onClick={() => go(c)} className="group block w-full overflow-hidden rounded-3xl bg-white text-left shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:ring-teal-200">
               <div className="relative h-28 overflow-hidden bg-gray-100">
                 <img loading="lazy" alt={t(c.nameKey)} src={imgOf(c)} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                 <span className="absolute left-2.5 top-2.5 grid h-9 w-9 place-items-center rounded-xl bg-white/95 text-teal-700 shadow-sm backdrop-blur"><c.icon size={18} /></span>
               </div>
-              <div className="px-3.5 py-3"><div className="mr-display font-bold text-gray-900">{t(c.nameKey)}</div><div className="text-xs font-medium text-gray-400">{HAS_API ? properties.filter((p) => p.type === c.type).length : c.count} {t("categories.listings")}</div></div>
+              <div className="px-3.5 py-3"><div className="mr-display font-bold text-gray-900">{t(c.nameKey)}</div><div className="text-xs font-medium text-gray-400">{HAS_API ? properties.filter((p) => (c.rental ? rentalOf(p) === c.rental : p.type === c.type && !isHotelP(p))).length : c.count} {t("categories.listings")}</div></div>
             </button>
           </Reveal>
         ))}
@@ -685,10 +702,10 @@ function PropertyCard({ p, delay = 0 }) {
           <button onClick={(e) => { e.stopPropagation(); toggleFavorite(p.id); }} className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full backdrop-blur transition ${fav ? "bg-rose-500 text-white" : "bg-white/90 text-gray-500 hover:text-rose-500"}`} aria-label={t("propertyCard.favorite")}>
             <Heart size={16} fill={fav ? "currentColor" : "none"} />
           </button>
-          <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-teal-700 backdrop-blur">{t(`types.${p.type}`)}</span>
+          <span className="absolute bottom-3 left-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-teal-700 backdrop-blur">{isHotelP(p) ? <>🏨 {t("rentalTypes.hotel")}{p.ownerStars ? <span className="ml-1 text-amber-500">{"★".repeat(p.ownerStars)}</span> : null}</> : t(`types.${p.type}`)}</span>
         </div>
         <div className="p-5">
-          <span className="mr-display text-xl font-extrabold text-teal-700">{formatGNF(p.price)}{!isSaleP(p) && <span className="text-xs font-medium text-gray-400">{t("propertyCard.perMonth")}</span>}</span>
+          <span className="mr-display text-xl font-extrabold text-teal-700">{formatGNF(p.price)}<PriceSuffix p={p} /></span>
           <h3 className="mr-display mt-1 text-lg font-bold text-gray-900">{t(p.titleKey)}</h3>
           <p className="mt-1 flex items-center gap-1 text-sm text-gray-500"><MapPin size={14} /> {p.neighborhood ? `${p.neighborhood}, ` : ""}{t(p.cityKey)}</p>
           <div className="mt-4 flex items-center gap-4 border-t border-gray-100 pt-4 text-sm text-gray-600">
@@ -996,12 +1013,15 @@ function DetailPage() {
                 </div>
               </div>
             )}
+            {isShortP(p) && <ShortStayInfo p={p} />}
             <div className="mt-8 overflow-hidden rounded-3xl ring-1 ring-gray-100">
               <div className="flex items-center gap-2 bg-gray-50 px-5 py-3 text-sm font-semibold text-gray-700"><MapPin size={16} className="text-teal-600" /> {p.neighborhood ? `${p.neighborhood}, ` : ""}{t(p.cityKey)}</div>
               <img alt={t("detail.mapAlt", { city: t(p.cityKey) })} src={url("photo-1524813686514-a57563d77965", 900)} className="h-48 w-full object-cover" />
             </div>
           </div>
           <aside className="lg:sticky lg:top-24 lg:self-start">
+            {/* Vente : MansaRent sert d'intermédiaire · Court séjour : réservation · Location : contact direct */}
+            {isSaleP(p) ? <SaleContactCard p={p} /> : isShortP(p) ? <BookingWidget p={p} /> : (
             <div className="rounded-3xl bg-white p-6 shadow-lg ring-1 ring-gray-100">
               <div className="text-sm text-gray-500">{isSaleP(p) ? t("pro.salePrice") : t("detail.monthlyRent")}</div>
               <div className="mr-display mt-1 text-3xl font-extrabold text-teal-700">{formatGNF(p.price)}{!isSaleP(p) && <span className="text-base font-medium text-gray-400">{t("propertyCard.perMonth")}</span>}</div>
@@ -1017,6 +1037,7 @@ function DetailPage() {
               <Btn variant="solid" className="mt-5 w-full py-3.5" onClick={contact}><MessageSquare size={18} /> {t("detail.sendMessage")}</Btn>
               <div className="mt-4 flex items-center justify-center gap-1.5 rounded-2xl bg-amber-50 py-2.5 text-xs font-medium text-amber-700"><ShieldCheck size={13} /> {t("detail.protectedVisits")}</div>
             </div>
+            )}
           </aside>
         </div>
         <div className="mt-12 border-t border-gray-100 pt-10"><ReviewsBlock propertyId={p.id} /></div>
@@ -1031,13 +1052,14 @@ function DetailPage() {
   );
 }
 
-const emptyForm = { title: "", type: "Maison", rentalType: "longStay", city: "Conakry", neighborhood: "", price: "", beds: "1", baths: "1", area: "", description: "" };
+const emptyForm = { title: "", type: "Maison", rentalType: "longStay", city: "Conakry", neighborhood: "", price: "", beds: "1", baths: "1", area: "", description: "", maxGuests: "2", minNights: "1", checkInTime: "14:00", checkOutTime: "11:00", houseRules: "" };
 
 function PostPage() {
   const { addProperty, saveListing, navigate, showToast, user, openAuth, route, properties } = useApp();
   const { t } = useTranslation();
   const editId = route.editId || null;
-  const [form, setForm] = useState({ ...emptyForm });
+  const isHotelUser = user?.role === "hotel";
+  const [form, setForm] = useState(() => (isHotelUser ? { ...emptyForm, rentalType: "hotel", type: "Chambre", beds: "1", units: "1" } : { ...emptyForm }));
   const [photos, setPhotos] = useState([]); // [{ url }] en ligne · [{ file, preview }] à envoyer
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
@@ -1047,8 +1069,9 @@ function PostPage() {
     if (!HAS_API || !editId) return;
     const fill = (p) => setForm({
       title: p.title || "", type: p.type, rentalType: RENTAL_FROM_API[p.rentalType] || "longStay", city: p.city,
-      neighborhood: p.neighborhood || "", price: String(p.price), beds: String(p.beds), baths: String(p.baths || 1),
+      neighborhood: p.neighborhood || "", price: String(p.hostPrice ?? p.price), beds: String(p.beds), baths: String(p.baths || 1),
       area: p.area ? String(p.area) : "", description: p.description || "",
+      maxGuests: String(p.maxGuests || 2), minNights: String(p.minNights || 1), checkInTime: p.checkInTime || "14:00", checkOutTime: p.checkOutTime || "11:00", houseRules: p.houseRules || "", units: String(p.units || 1),
     });
     setPhotos((p.images || []).map((u) => ({ url: u })));
     const known = properties.find((x) => x.id === editId);
@@ -1081,6 +1104,11 @@ function PostPage() {
           title: form.title.trim(), type: form.type, rentalType: RENTAL_TO_API[form.rentalType], city: form.city,
           neighborhood: form.neighborhood.trim(), price: Number(form.price), beds: Number(form.beds), baths: Number(form.baths),
           area: Number(form.area) || 0, description: desc.length >= 10 ? desc : `${form.title.trim()} — ${t(`types.${form.type}`)}, ${form.neighborhood.trim() || t(`cities.${form.city}`)}.`,
+          ...(["shortStay", "hotel"].includes(form.rentalType) ? {
+            maxGuests: Number(form.maxGuests) || 2, minNights: Number(form.minNights) || 1,
+            ...(form.rentalType === "hotel" ? { units: Math.max(1, Number(form.units) || 1) } : {}),
+            checkInTime: form.checkInTime || null, checkOutTime: form.checkOutTime || null, houseRules: form.houseRules.trim() || null,
+          } : {}),
           images: kept,
         });
         // Puis envoi des nouvelles photos (galerie / appareil photo).
@@ -1118,9 +1146,9 @@ function PostPage() {
       </div>
     );
   }
-  const proGate = HAS_API && user.role !== "admin" && !(["agent", "landlord"].includes(user.role) && user.verification === "approved");
+  const proGate = HAS_API && user.role !== "admin" && !(["agent", "landlord", "hotel"].includes(user.role) && user.verification === "approved");
   if (proGate) {
-    const isPro = ["agent", "landlord"].includes(user.role);
+    const isPro = ["agent", "landlord", "hotel"].includes(user.role);
     return (
       <div className="min-h-screen bg-gray-50/70">
         <div className="mx-auto max-w-md px-5 py-24 text-center">
@@ -1148,18 +1176,19 @@ function PostPage() {
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div><label className={lab}>{t("post.form.type")}</label><select className={sel} value={form.type} onChange={(e) => set("type", e.target.value)}>{TYPES_KEYS.map((type) => <option key={type} value={type}>{t(`types.${type}`)}</option>)}</select></div>
-              <div><label className={lab}>{t("post.form.rentalType")}</label><select className={sel} value={form.rentalType} onChange={(e) => set("rentalType", e.target.value)}>{LOCATIONS_KEYS.map((rt) => <option key={rt} value={rt}>{t(`rentalTypes.${rt}`)}</option>)}</select></div>
+              <div><label className={lab}>{t("post.form.rentalType")}</label><select className={sel} value={form.rentalType} onChange={(e) => set("rentalType", e.target.value)}>{LOCATIONS_KEYS.filter((rt) => (isHotelUser ? rt === "hotel" : rt !== "hotel" || user?.role === "admin")).map((rt) => <option key={rt} value={rt}>{t(`rentalTypes.${rt}`)}</option>)}</select></div>
               <div><label className={lab}>{t("post.form.city")} *</label><select className={`${sel} ${errors.city ? "ring-rose-400" : ""}`} value={form.city} onChange={(e) => set("city", e.target.value)}>{VILLES_KEYS.map((v) => <option key={v} value={v}>{t(`cities.${v}`)}</option>)}</select></div>
               <div><label className={lab}>{t("post.form.neighborhood")}</label><input className={inp} placeholder={t("post.form.neighborhoodPlaceholder")} value={form.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></div>
             </div>
             <div className="grid gap-5 sm:grid-cols-4">
-              <div className="sm:col-span-2"><label className={lab}>{form.rentalType === "sale" ? t("pro.salePrice") : t("post.form.rent")} *</label><input type="number" className={`${inp} ${errors.price ? "ring-rose-400" : ""}`} placeholder={t("post.form.rentPlaceholder")} value={form.price} onChange={(e) => set("price", e.target.value)} />{errors.price && <p className="mt-1 text-xs text-rose-500">{errors.price}</p>}</div>
+              <div className="sm:col-span-2"><label className={lab}>{form.rentalType === "sale" ? t("pro.salePrice") : form.rentalType === "hotel" ? t("deals.post.roomPrice") : form.rentalType === "shortStay" ? t("deals.post.price") : t("post.form.rent")} *</label><input type="number" className={`${inp} ${errors.price ? "ring-rose-400" : ""}`} placeholder={t("post.form.rentPlaceholder")} value={form.price} onChange={(e) => set("price", e.target.value)} />{errors.price && <p className="mt-1 text-xs text-rose-500">{errors.price}</p>}</div>
               <div><label className={lab}>{t("post.form.bedrooms")}</label><select className={sel} value={form.beds} onChange={(e) => set("beds", e.target.value)}>{[0, 1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
               <div><label className={lab}>{t("post.form.bathrooms")}</label><select className={sel} value={form.baths} onChange={(e) => set("baths", e.target.value)}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <div><label className={lab}>{t("post.form.area")}</label><input type="number" className={inp} placeholder={t("post.form.areaPlaceholder")} value={form.area} onChange={(e) => set("area", e.target.value)} /></div>
             </div>
+            {["shortStay", "hotel"].includes(form.rentalType) && <ShortStayFields form={form} set={set} lab={lab} inp={inp} sel={sel} hotel={form.rentalType === "hotel"} />}
             <div>
               <label className={lab}>{t("pro.photos.label")}</label>
               <PhotoPicker photos={photos} onChange={setPhotos} />
@@ -1511,6 +1540,13 @@ function ReviewsBlock({ propertyId = null, agentId = null }) {
   );
 }
 
+// Étiquette d'une conversation de vente (l'acheteur et l'agent ne se voient jamais).
+const convChip = (c, t) => {
+  if (c.kind === "sale") return c.myRole === "admin" ? t("deals.chat.buyerLead", { status: t(`deals.lead.status.${c.leadStatus || "new"}`) }) : t("deals.chat.advisor");
+  if (c.kind === "agent") return c.myRole === "admin" ? t("deals.chat.agentLead") : t("deals.chat.team");
+  return null;
+};
+
 function MessagesPage() {
   const { conversations, sendMessage, markConversationRead, loadMessages, route, navigate, user, openAuth, notifications } = useApp();
   const { t } = useTranslation();
@@ -1576,6 +1612,7 @@ function MessagesPage() {
                   <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-teal-700 text-sm font-bold text-white">{c.agentName.charAt(0)}</span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2"><span className="mr-display min-w-0 truncate font-bold text-gray-900">{c.agentName}</span>{c.unread && <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-500" />}</span>
+                    {convChip(c, t) && <span className="mt-0.5 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">{convChip(c, t)}</span>}
                     {c.propertyTitle && HAS_API && <span className="block truncate text-[11px] font-semibold text-teal-700">{c.propertyTitle}</span>}
                     <span className="block truncate text-xs text-gray-500">{c.messages[c.messages.length - 1]?.text || c.lastText}</span>
                   </span>
@@ -1589,7 +1626,7 @@ function MessagesPage() {
                     <button onClick={() => setActiveId(null)} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-gray-500 ring-1 ring-gray-200 hover:text-teal-700 lg:hidden" aria-label={t("detail.back")}><ArrowLeft size={17} /></button>
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-teal-700 text-sm font-bold text-white">{active.agentName.charAt(0)}</span>
                     <div className="min-w-0 flex-1">
-                      <div className="mr-display truncate font-bold text-gray-900">{active.agentName}</div>
+                      <div className="mr-display flex min-w-0 items-center gap-2"><span className="truncate font-bold text-gray-900">{active.agentName}</span>{convChip(active, t) && <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-extrabold text-amber-700">{convChip(active, t)}</span>}</div>
                       <button onClick={() => navigate("detail", { id: active.propertyId })} className="block w-full max-w-full truncate text-left text-xs text-teal-700 hover:underline">{t("messages.about", { title: active.propertyTitle })}</button>
                     </div>
                     <span className="hidden shrink-0 items-center gap-1 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 sm:flex"><ShieldCheck size={12} /> {t("messages.verified")}</span>
@@ -1800,7 +1837,7 @@ const TAB_ROOTS = ["home", "listings", "favorites", "discover", "messages", "pro
 const APP_TITLES = {
   detail: "app.title.detail", post: "nav.postListing", agent: "app.title.agent",
   onboarding: "app.title.onboarding", dashboard: "pro.dash.title", ranking: "pro.rank.title", reset: "app.title.reset",
-  editProfile: "app.title.editProfile", admin: "shell.admin.title",
+  editProfile: "app.title.editProfile", admin: "shell.admin.title", bookings: "app.title.bookings", paymentReturn: "app.title.payment",
 };
 
 function TopBar() {
@@ -1856,7 +1893,7 @@ function TopBar() {
                 </div>
                 {[
                   ["profile", t("shell.tabs.profile"), () => navigate("profile")],
-                  ...(HAS_API && ["agent", "landlord"].includes(user.role) ? [["dashboard", t("pro.dash.title"), () => navigate("dashboard")]] : []),
+                  ...(HAS_API && ["agent", "landlord", "hotel"].includes(user.role) ? [["dashboard", t("pro.dash.title"), () => navigate("dashboard")]] : []),
                   ...(HAS_API ? [["ranking", t("pro.rank.title"), () => navigate("ranking")]] : []),
                   ...(user.role === "admin" ? [["admin", t("shell.admin.title"), () => navigate("admin")]] : []),
                 ].map(([k, label, fn]) => (
@@ -1933,7 +1970,7 @@ function BottomNav() {
     ["favorites", "favorites", <Heart key="i" size={21} />, t("shell.tabs.favorites"), ["favorites"]],
     ["discover", "discover", <Compass key="i" size={21} />, t("shell.tabs.discover"), ["discover", "agent"]],
     ["messages", "messages", <MessageSquare key="i" size={21} />, t("shell.tabs.messages"), ["messages"]],
-    ["profile", "profile", <CircleUserRound key="i" size={21} />, t("shell.tabs.profile"), ["profile", "post"]],
+    ["profile", "profile", <CircleUserRound key="i" size={21} />, t("shell.tabs.profile"), ["profile", "post", "bookings"]],
   ];
   return (
     // Barre d'onglets flottante : pilule détachée du bord, l'onglet actif s'élargit (icône + nom).
@@ -2078,8 +2115,9 @@ function ProfilePage() {
     ["edit", <Pencil key="i" size={19} />, t("pro.profileEdit.title"), "", () => navigate("editProfile")],
     ["saved", <Heart key="i" size={19} />, t("shell.profile.saved"), `${favorites.length}`, () => navigate("favorites")],
     ["notifs", <Bell key="i" size={19} />, t("shell.profile.notifications"), unread > 0 ? `${unread}` : "", () => navigate("messages")],
-    ...(HAS_API && ["agent", "landlord", "admin"].includes(user.role) ? [["dashboard", <LayoutDashboard key="i" size={19} />, t("pro.dash.title"), user.verification === "pending" ? t("pro.verif.pending") : "", () => navigate("dashboard")]] : []),
-    ...(HAS_API && ["agent", "landlord"].includes(user.role) ? [["proProfile", <ShieldCheck key="i" size={19} />, t("pro.onboarding.menu"), "", () => navigate("onboarding")]] : []),
+    ...(HAS_API ? [["bookings", <CalendarCheck key="i" size={19} />, t("deals.menu"), "", () => navigate("bookings")]] : []),
+    ...(HAS_API && ["agent", "landlord", "hotel", "admin"].includes(user.role) ? [["dashboard", <LayoutDashboard key="i" size={19} />, t("pro.dash.title"), user.verification === "pending" ? t("pro.verif.pending") : "", () => navigate("dashboard")]] : []),
+    ...(HAS_API && ["agent", "landlord", "hotel"].includes(user.role) ? [["proProfile", <ShieldCheck key="i" size={19} />, t("pro.onboarding.menu"), "", () => navigate("onboarding")]] : []),
     ["post", <Plus key="i" size={19} />, t("nav.postListing"), "", () => navigate("post")],
     ...(HAS_API ? [["ranking", <Trophy key="i" size={19} />, t("pro.rank.title"), "", () => navigate("ranking")]] : []),
     ...(user.role === "admin" ? [["admin", <Settings key="i" size={19} />, t("shell.admin.title"), "", () => navigate("admin")]] : []),
@@ -2185,7 +2223,7 @@ function AdminPage() {
   const { user, navigate, showToast } = useApp();
   const { t } = useTranslation();
   const hasBackend = !!import.meta.env.VITE_API_URL;
-  const [tab, setTab] = useState("verifications");
+  const [tab, setTab] = useState("leads");
   const [integrations, setIntegrations] = useState(null);  const [drafts, setDrafts] = useState({});
   const [settings, setSettings] = useState(null);
   const [users, setUsers] = useState(null);
@@ -2250,10 +2288,12 @@ function AdminPage() {
       <h1 className="mr-display text-2xl font-extrabold text-gray-900 sm:text-3xl">{t("shell.admin.title")}</h1>
       <p className="mt-1 text-sm text-gray-500">{t("shell.admin.subtitle")}</p>
       <div className="mt-5 flex flex-wrap gap-2">
-        {(["verifications", "listings", "integrations", "users", "content"]).map((k) => (
+        {(["leads", "payments", "verifications", "listings", "integrations", "users", "content"]).map((k) => (
           <button key={k} onClick={() => setTab(k)} className={`rounded-full px-5 py-2.5 text-sm font-bold ${tab === k ? "bg-teal-700 text-white" : "bg-white text-gray-600 ring-1 ring-gray-200"}`}>{t(`shell.admin.tabs.${k}`)}</button>
         ))}
       </div>
+      {tab === "leads" && <AdminLeads />}
+      {tab === "payments" && <AdminPayments />}
       {tab === "verifications" && <AdminVerifications />}
       {tab === "listings" && <AdminListings />}
       {tab === "integrations" && (
@@ -2294,7 +2334,7 @@ function AdminPage() {
                   <span className="block truncate text-xs text-gray-500">{u.email}</span>
                 </span>
                 <select value={u.role} disabled={u.id === user.id} onChange={(e) => changeRole(u.id, e.target.value)} title={t("shell.admin.usersSubtitle")} className="mr-sel shrink-0 appearance-none rounded-xl bg-gray-50 py-2 pl-3 pr-8 text-xs font-bold text-teal-700 ring-1 ring-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50">
-                  {(["tenant", "landlord", "agent", "admin"]).map((r) => (<option key={r} value={r}>{t(`shell.admin.roles.${r}`)}</option>))}
+                  {(["tenant", "landlord", "agent", "hotel", "admin"]).map((r) => (<option key={r} value={r}>{t(`shell.admin.roles.${r}`)}</option>))}
                 </select>
               </div>
             ))}
@@ -2353,6 +2393,8 @@ export default function MansaRent() {
     try {
       const token = new URLSearchParams(window.location.search).get("token");
       if (window.location.pathname.startsWith("/reset-password") && token) return [{ name: START_PAGE }, { name: "reset", token }];
+      const paid = new URLSearchParams(window.location.search).get("payment");
+      if (paid) return [{ name: START_PAGE }, { name: "paymentReturn", id: paid }];
     } catch { /* ignore */ }
     return [{ name: START_PAGE }];
   });
@@ -2442,6 +2484,13 @@ export default function MansaRent() {
       .catch((e) => { if (e.status === 401) Session.clear(); else if (tries > 1) setTimeout(() => restore(tries - 1), 2000); });
     if (Session.get()) restore();
   }, []);
+  // Les biens à vendre ne montrent l'agent qu'à lui-même / à l'admin : on recharge à la connexion.
+  const lastUserId = useRef(null);
+  useEffect(() => {
+    if (!HAS_API) return;
+    if (lastUserId.current !== null && lastUserId.current !== (user?.id || "")) reloadProperties();
+    lastUserId.current = user?.id || "";
+  }, [user?.id]);
   useEffect(() => {
     if (!HAS_API || !user?.id) return;
     FavoriteAPI.list().then((r) => setFavorites((r.favorites || []).map((p) => p.id))).catch(() => {});
@@ -2494,6 +2543,8 @@ export default function MansaRent() {
     agentName: c.other?.name || "—",
     other: c.other,
     myRole: c.myRole,
+    kind: c.kind || "direct",
+    leadStatus: c.leadStatus || null,
     unread: c.unread > 0,
     unreadCount: c.unread,
     lastText: c.messages?.[0]?.text || "",
@@ -2520,10 +2571,10 @@ export default function MansaRent() {
     return () => clearInterval(timer);
   }, [user?.id]);
 
-  const startConversation = (p) => {
+  const startConversation = (p, extra = {}) => {
     if (HAS_API && typeof p.id === "string") {
       if (user && p.ownerId === user.id) { showToast(t("pro.chat.ownListing")); return Promise.resolve(null); }
-      return ConversationAPI.start(p.id)
+      return ConversationAPI.start(p.id, extra)
         .then(async (r) => { await loadConversations(); return r.conversation.id; })
         .catch((e) => { showToast(e.message); return null; });
     }
@@ -2592,6 +2643,8 @@ export default function MansaRent() {
         const d = n?.data || {};
         if (d.type === "message") navigate("messages", d.conversationId ? { conv: d.conversationId } : {});
         else if (d.type === "verification") navigate("dashboard");
+        else if (d.type === "booking") navigate("bookings");
+        else if (d.type === "lead") navigate("admin");
       },
     });
     registerPush();
@@ -2639,6 +2692,8 @@ export default function MansaRent() {
   else if (route.name === "ranking") page = <RankingPage />;
   else if (route.name === "reset") page = <ResetPasswordPage />;
   else if (route.name === "editProfile") page = <EditProfilePage />;
+  else if (route.name === "bookings") page = <BookingsPage />;
+  else if (route.name === "paymentReturn") page = <PaymentReturnPage />;
   else page = <HomePage />;
 
   return (
@@ -2662,4 +2717,4 @@ export default function MansaRent() {
 }
 
 // Partagé avec ./pro.jsx (espace agent / vendeur, classement, vérifications).
-export { useApp, Btn, Avatar, Stars, PropertyCard, ReviewsBlock, formatGNF, VILLES_KEYS, coverOf, fromApi, fmtDate };
+export { formatGNFFull, useApp, Btn, Avatar, Stars, PropertyCard, ReviewsBlock, formatGNF, VILLES_KEYS, coverOf, fromApi, fmtDate };

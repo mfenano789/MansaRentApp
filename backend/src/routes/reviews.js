@@ -56,9 +56,17 @@ router.post("/", requireAuth, async (req, res) => {
       if (agentId === req.user.id) return res.status(400).json({ error: "Vous ne pouvez pas noter votre propre profil", code: "SELF_REVIEW" });
     }
     if (propertyId) {
-      const prop = await prisma.property.findUnique({ where: { id: propertyId }, select: { landlordId: true } });
+      const prop = await prisma.property.findUnique({ where: { id: propertyId }, select: { landlordId: true, rentalType: true } });
       if (!prop) return res.status(404).json({ error: "Annonce introuvable" });
       if (prop.landlordId === req.user.id) return res.status(400).json({ error: "Vous ne pouvez pas noter votre propre annonce", code: "SELF_REVIEW" });
+      // Court séjour : seuls les voyageurs ayant terminé un séjour peuvent laisser un avis (avis authentiques).
+      if (prop.rentalType === "Court séjour") {
+        const stayed = await prisma.booking.findFirst({
+          where: { propertyId, guestId: req.user.id, status: "accepted", paymentStatus: "paid", checkOut: { lte: new Date() } },
+          select: { id: true },
+        });
+        if (!stayed) return res.status(403).json({ error: "Seuls les voyageurs ayant séjourné ici peuvent laisser un avis", code: "STAY_REQUIRED" });
+      }
     }
     const dup = await prisma.review.findFirst({
       where: { authorId: req.user.id, ...(agentId ? { agentId } : { propertyId }) },

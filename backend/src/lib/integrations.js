@@ -25,6 +25,17 @@ export const INTEGRATION_DEFS = {
     { key: "R2_BUCKET_NAME", label: "Bucket", secret: false },
     { key: "R2_PUBLIC_URL", label: "URL publique", secret: false },
   ]},
+  mansasend: { label: "MansaSend (paiements : Orange Money, MTN, carte)", fields: [
+    { key: "MANSASEND_API_URL", label: "URL de l'API MansaSend (ex. https://api.mansasend.com)", secret: false },
+    { key: "MANSASEND_MERCHANT_ID", label: "Merchant ID (compte marchand MansaRent)", secret: false },
+    { key: "MANSASEND_API_KEY", label: "Clé API secrète", secret: true },
+    { key: "MANSASEND_WEBHOOK_SECRET", label: "Secret de signature des callbacks", secret: true },
+    { key: "MANSASEND_PAYOUTS", label: "Versements & remboursements automatiques (on / off — off = envoi manuel)", secret: false },
+    { key: "MANSARENT_COMMISSION_PCT", label: "Commission MansaRent % (défaut 10)", secret: false },
+    { key: "PAY_FEE_MOBILE_PCT", label: "Frais Orange Money / MTN % (défaut 2,5)", secret: false },
+    { key: "PAY_FEE_CARD_PCT", label: "Frais carte % (défaut 2)", secret: false },
+    { key: "PAY_FEE_PAYOUT_PCT", label: "Frais de versement % (défaut 1,5)", secret: false },
+  ]},
   firebase: { label: "Firebase (notifications push de l'appli)", fields: [
     { key: "FIREBASE_SERVICE_ACCOUNT", label: "Compte de service (contenu JSON complet)", secret: true },
   ]},

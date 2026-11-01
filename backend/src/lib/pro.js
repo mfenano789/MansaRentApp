@@ -4,7 +4,7 @@
 // ============================================================
 import { prisma } from "./db.js";
 
-export const PRO_ROLES = ["agent", "landlord"];
+export const PRO_ROLES = ["agent", "landlord", "hotel"];
 export const isPro = (u) => !!u && PRO_ROLES.includes(u.role);
 export const isApprovedPro = (u) => !!u && (u.role === "admin" || (isPro(u) && u.verification === "approved"));
 
@@ -27,6 +27,7 @@ export function publicPro(user) {
     yearsExperience: pp?.yearsExperience ?? null,
     agencyName: pp?.agencyName || null,
     bio: pp?.bio || null,
+    stars: pp?.stars ?? null,
   };
 }
 
@@ -34,8 +35,8 @@ export function publicPro(user) {
 export async function statsFor(userIds) {
   const ids = [...new Set(userIds)].filter(Boolean);
   const empty = () => ({
-    listings: 0, active: 0, rented: 0, sold: 0, closed: 0,
-    rentedValue: 0, soldValue: 0, totalValue: 0,
+    listings: 0, active: 0, rented: 0, sold: 0, closed: 0, stays: 0,
+    rentedValue: 0, soldValue: 0, staysValue: 0, totalValue: 0,
     views: 0, favorites: 0, messages: 0, rating: 0, reviewCount: 0,
   });
   const out = Object.fromEntries(ids.map((id) => [id, empty()]));
@@ -60,6 +61,17 @@ export async function statsFor(userIds) {
     else if (p.status === "sold") { s.sold += 1; s.soldValue += dealValue(p); }
     else s.active += 1;
   }
+  // Courts séjours et hôtels : séjours terminés (payés en ligne ou à l'arrivée)
+  const stays = await prisma.booking.groupBy({
+    by: ["hostId"],
+    where: { hostId: { in: ids }, status: "accepted", paymentStatus: { in: ["paid", "on_arrival"] }, checkOut: { lte: new Date() } },
+    _count: { _all: true },
+    _sum: { hostAmount: true },
+  });
+  for (const r of stays) {
+    out[r.hostId].stays = r._count._all;
+    out[r.hostId].staysValue = r._sum.hostAmount || 0;
+  }
   const propIds = Object.keys(ownerOf);
   const reviews = await prisma.review.findMany({
     where: { OR: [{ agentId: { in: ids } }, ...(propIds.length ? [{ propertyId: { in: propIds } }] : [])] },
@@ -75,8 +87,8 @@ export async function statsFor(userIds) {
   }
   for (const id of ids) {
     const s = out[id];
-    s.closed = s.rented + s.sold;
-    s.totalValue = s.rentedValue + s.soldValue;
+    s.closed = s.rented + s.sold + s.stays;
+    s.totalValue = s.rentedValue + s.soldValue + s.staysValue;
     if (sums[id]) {
       s.reviewCount = sums[id].n;
       s.rating = Math.round((sums[id].total / sums[id].n) * 10) / 10;

@@ -29,7 +29,7 @@ model User {
   password         String?
   avatar           String?
   phone            String?
-  role             String    @default("tenant") // tenant | landlord | agent | admin
+  role             String    @default("tenant") // tenant | landlord | agent | hotel | admin
   googleId         String?   @unique
   // Parcours d'inscription : le rôle (acheteur/locataire, agent, vendeur/propriétaire)
   // est choisi une fois après l'inscription. Agents et propriétaires passent
@@ -116,6 +116,13 @@ model Property {
   dealPrice    Int?     // montant final de la transaction (sinon le prix affiché)
   closedAt     DateTime?
   views        Int      @default(0)
+  // Court séjour (type Airbnb) : le prix est par nuit
+  maxGuests    Int      @default(2)  // par chambre pour un hôtel
+  units        Int      @default(1)  // hôtel : nombre de chambres identiques de ce type
+  minNights    Int      @default(1)
+  checkInTime  String?  // ex. "14:00"
+  checkOutTime String?  // ex. "11:00"
+  houseRules   String?  @db.Text
   landlordId   String
   landlord     User     @relation(fields: [landlordId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
@@ -123,6 +130,8 @@ model Property {
   favorites    Favorite[]
   conversations Conversation[]
   reviews      Review[]
+  bookings     Booking[]
+  leads        Lead[]
 
   @@index([city])
   @@index([type])
@@ -152,6 +161,10 @@ model ProProfile {
   licenseNumber   String?
   bio             String?   @db.Text
   rejectionReason String?
+  // Où l'hôte reçoit ses paiements de courts séjours (versement automatique)
+  stars           Int?      // hôtel : nombre d'étoiles (1 à 5)
+  payoutOperator  String?   // om (Orange Money) | momo (MTN MoMo)
+  payoutPhone     String?
   submittedAt     DateTime  @default(now())
   reviewedAt      DateTime?
   updatedAt       DateTime  @updatedAt
@@ -170,6 +183,10 @@ model Favorite {
 
 model Conversation {
   id         String   @id @default(cuid())
+  // direct = client ↔ agent (location) ou voyageur ↔ hôte (court séjour)
+  // sale   = acheteur ↔ MansaRent (admin) pour un bien à vendre
+  // agent  = MansaRent (admin) ↔ agent/vendeur au sujet d'un acheteur
+  kind       String   @default("direct")
   propertyId String
   tenantId   String
   landlordId String
@@ -241,4 +258,114 @@ model DeviceToken {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+// Demande d'achat : l'acheteur parle à MansaRent (admin), jamais directement à l'agent.
+model Lead {
+  id          String    @id @default(cuid())
+  propertyId  String
+  buyerId     String
+  agentId     String
+  buyerConvId String    @unique
+  agentConvId String?
+  status      String    @default("new") // new | contacted | visit | offer | sold | lost
+  notes       String?   @db.Text        // notes internes (admin uniquement)
+  visitAt     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, buyerId])
+  @@index([status])
+  @@index([agentId])
+}
+
+// Réservation court séjour (type Airbnb) : demande → l'hôte accepte ou refuse.
+model Booking {
+  id         String   @id @default(cuid())
+  propertyId String
+  guestId    String
+  hostId     String
+  checkIn    DateTime // date d'arrivée (minuit UTC)
+  checkOut   DateTime // date de départ (minuit UTC)
+  nights     Int
+  guests     Int      @default(1)
+  units      Int      @default(1) // hôtel : nombre de chambres réservées
+  pricePerNight Int      // prix de l'hôte par nuit (par chambre)
+  hostAmount Int      @default(0) // nuits × prix de l'hôte
+  commission Int      @default(0) // part MansaRent (10 %)
+  total      Int      // ce que paie le voyageur = hostAmount + commission
+  status     String   @default("pending") // pending | accepted | declined | cancelled | expired
+  message    String?  @db.Text
+  acceptedAt DateTime?
+  cancelReason String?
+  // Paiement dans l'appli (Lengo Pay : Orange Money, MTN MoMo, carte)
+  paymentStatus String  @default("unpaid") // unpaid | pending | paid | refund_pending | refunded
+  payMethod  String?
+  paidAt     DateTime?
+  refundAmount Int?
+  // Versement automatique à l'hôte (24 h après l'arrivée, frais déduits de sa part)
+  payoutStatus String   @default("none") // none | scheduled | processing | manual | paid | failed | cancelled
+  payoutDueAt DateTime?
+  payoutAmount Int?
+  payoutFees Int?
+  payoutAt   DateTime?
+  // Paiement à l'arrivée (paiement en ligne en pause) : la commission MansaRent est due par l'hôte
+  commissionStatus String @default("none") // none | due | collected | waived
+  commissionCollectedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  payments   Payment[]
+  payouts    Payout[]
+
+  @@index([propertyId, status])
+  @@index([guestId])
+  @@index([hostId])
+  @@index([payoutStatus, payoutDueAt])
+}
+
+// Paiement d'un voyageur (une tentative = une ligne)
+model Payment {
+  id          String   @id @default(cuid())
+  bookingId   String
+  provider    String   @default("lengopay")
+  reference   String   @unique // notre référence
+  providerRef String?  // pay_id Lengo Pay
+  amount      Int
+  currency    String   @default("GNF")
+  status      String   @default("pending") // pending | success | failed
+  method      String?  // om | momo | card
+  paymentUrl  String?  @db.Text
+  raw         Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([providerRef])
+}
+
+// Versement à l'hôte, ou remboursement au voyageur (kind = refund)
+model Payout {
+  id          String    @id @default(cuid())
+  bookingId   String
+  kind        String    @default("host") // host | refund
+  userId      String    // hôte (host) ou voyageur (refund)
+  amount      Int       // montant envoyé
+  fees        Int       @default(0)
+  operator    String?   // om | momo
+  account     String?   // numéro de téléphone
+  status      String    @default("pending") // pending | processing | manual | paid | failed
+  providerRef String?
+  error       String?   @db.Text
+  attempts    Int       @default(0)
+  sentAt      DateTime?
+  sentBy      String?   // admin qui a confirmé un envoi manuel
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([bookingId])
 }

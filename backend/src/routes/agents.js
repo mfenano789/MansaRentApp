@@ -12,7 +12,7 @@ const router = Router();
 // ---- Classement : transactions conclues, puis note, puis avis ------------
 router.get("/leaderboard", async (req, res) => {
   try {
-    const kind = req.query.kind === "landlord" ? "landlord" : "agent";
+    const kind = ["landlord", "hotel"].includes(req.query.kind) ? req.query.kind : "agent";
     const limit = Math.min(Number(req.query.limit) || 50, 100);
     const users = await prisma.user.findMany({
       where: { role: kind, verification: "approved" },
@@ -37,7 +37,8 @@ router.get("/:id", async (req, res) => {
     if (!agent) return res.status(404).json({ error: "Agent introuvable" });
     const [properties, stats] = await Promise.all([
       prisma.property.findMany({
-        where: { landlordId: agent.id },
+        // Les biens à vendre passent par MansaRent : ils n'apparaissent pas sur le profil public.
+        where: { landlordId: agent.id, rentalType: { not: "Vente" } },
         orderBy: [{ status: "asc" }, { createdAt: "desc" }],
         include: { _count: { select: { favorites: true } } },
       }),
@@ -51,7 +52,7 @@ router.get("/:id", async (req, res) => {
     });
     // Rang dans le classement de sa catégorie (agents vérifiés uniquement).
     let rankPos = null;
-    if (["agent", "landlord"].includes(agent.role) && agent.verification === "approved") {
+    if (["agent", "landlord", "hotel"].includes(agent.role) && agent.verification === "approved") {
       const peers = await prisma.user.findMany({
         where: { role: agent.role, verification: "approved" },
         select: { id: true },
